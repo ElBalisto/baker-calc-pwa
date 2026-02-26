@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Baker Calc</title>
+</head>
+<body>
+  <header>
+    <h1>🥖 Baker Calc</h1>
+    <p class="sub">Water Temp • Starter Rise • Bulk Fermentation</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-target="water">Water Temp</button>
+    <button class="tab" data-target="starter">Starter Rise</button>
+    <button class="tab" data-target="bulk">Bulk Time</button>
+    <button class="tab" data-target="settings">Settings</button>
+  </nav>
+
+  <main>
+    <!-- Water Temperature -->
+    <section id="water" class="panel active" aria-labelledby="Water Temperature">
+      <h2>Water Temperature (DDT)</h2>
+      <div class="grid">
+        <label>Desired Dough Temp (DDT) °C
+          <input id="w_ddt" type="number" step="0.5" min="15" max="32" value="26">
+        </label>
+        <label>Room °C
+          <input id="w_room" type="number" step="0.5" min="0" max="40" value="25">
+        </label>
+        <label>Flour °C
+          <input id="w_flour" type="number" step="0.5" min="0" max="40" value="24">
+        </label>
+        <label class="row">
+          <input id="w_pref_on" type="checkbox" checked>
+          <span>Use Preferment / Sourdough</span>
+        </label>
+        <label id="w_pref_wrap">Preferment °C
+          <input id="w_pref" type="number" step="0.5" min="0" max="40" value="24">
+        </label>
+
+        <label>Mixing Method
+          <select id="w_method">
+            <option value="hand">Hand</option>
+            <option value="planetary">Planetary</option>
+            <option value="spiral">Spiral</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label id="w_custom_wrap" class="hidden">Custom Friction °C
+          <input id="w_custom" type="number" step="0.5" min="0" max="20" value="0">
+        </label>
+      </div>
+
+      <div class="result">
+        <div>Target Water Temperature:</div>
+        <div id="w_out" class="big">— °C</div>
+        <div id="w_note" class="note"></div>
+      </div>
+    </section>
+
+    <!-- Starter Rise -->
+    <section id="starter" class="panel" aria-labelledby="Starter Rise">
+      <h2>Starter Rise Time</h2>
+      <div class="grid">
+        <div class="rowgroup">
+          <div class="group-title">Feeding Ratio (seed : flour : water)</div>
+          <label>Seed
+            <input id="s_seed" type="number" step="1" min="1" max="50" value="1">
+          </label>
+          <label>Flour
+            <input id="s_flour" type="number" step="1" min="1" max="100" value="2">
+          </label>
+          <label>Water
+            <input id="s_water" type="number" step="1" min="1" max="100" value="2">
+          </label>
+          <div class="muted">
+            Inoculation ≈ <span id="s_inoc">—</span>% •
+            Hydration (computed) ≈ <span id="s_hydr">—</span>%
+          </div>
+        </div>
+
+        <label>Temperature °C
+          <input id="s_temp" type="number" step="0.5" min="10" max="35" value="26">
+        </label>
+        <label>Flour Type
+          <select id="s_flourtype">
+            <option value="white">White</option>
+            <option value="whole">Whole/Rye</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="result">
+        <div>Estimated Peak:</div>
+        <div id="s_out" class="big">— h</div>
+        <div class="note">Tip: tune the model constants in Settings after a few runs.</div>
+      </div>
+    </section>
+
+    <!-- Bulk Fermentation -->
+    <section id="bulk" class="panel" aria-labelledby="Bulk Fermentation">
+      <h2>Bulk Fermentation</h2>
+      <div class="grid">
+        <label>Starter % of Flour
+          <input id="b_sp" type="number" step="0.5" min="1" max="40" value="20">
+        </label>
+        <label>Dough Temp (DDT) °C
+          <input id="b_ddt" type="number" step="0.5" min="15" max="32" value="26">
+        </label>
+        <label>Flour Type
+          <select id="b_flourtype">
+            <option value="white">White</option>
+            <option value="whole">Whole/Rye</option>
+          </select>
+        </label>
+        <label>Hydration
+          <select id="b_hydr_band">
+            <option value="normal">60–75%</option>
+            <option value="stiff">≤ 60%</option>
+            <option value="high">≥ 75%</option>
+          </select>
+        </label>
+        <label>Salt %
+          <input id="b_salt" type="number" step="0.1" min="0" max="3.5" value="2.0">
+        </label>
+      </div>
+
+      <div class="result">
+        <div>Estimated Bulk:</div>
+        <div id="b_out" class="big">— h</div>
+        <div class="note">Watch the dough: aim for ~30–60% rise with good aeration.</div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="panel" aria-labelledby="Settings">
+      <h2>Model Settings</h2>
+      <div class="grid">
+        <div class="group-title">Starter Model</div>
+        <label>k (h)
+          <input id="set_st_k" type="number" step="0.1" min="0.5" max="4" value="1.7">
+        </label>
+        <label>α
+          <input id="set_st_a" type="number" step="0.05" min="0.4" max="1.2" value="0.8">
+        </label>
+        <label>Q10
+          <input id="set_q10" type="number" step="0.05" min="1.5" max="2.5" value="2.0">
+        </label>
+        <label>Starter Tref °C
+          <input id="set_st_tref" type="number" step="0.5" min="20" max="30" value="26">
+        </label>
+
+        <div class="group-title">Bulk Model</div>
+        <label>c (h)
+          <input id="set_b_c" type="number" step="0.1" min="0.5" max="4" value="1.5">
+        </label>
+        <label>β
+          <input id="set_b_b" type="number" step="0.05" min="0.3" max="1.0" value="0.6">
+        </label>
+      </div>
+      <div class="note">Values persist on this device (localStorage).</div>
+    </section>
+  </main>
+
+  <footer>
+    <button id="installBtn" class="install hidden">Install App</button>
+    <span class="muted">PWA • Works offline</span>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

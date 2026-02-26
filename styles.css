@@ -1,0 +1,92 @@
+:root {
+  --bg: #0b1521;
+  --card: #0f172a;
+  --muted: #94a3b8;
+  --text: #e2e8f0;
+  --accent: #0ea5a4;
+  --accent-2: #0f766e;
+  --danger: #ef4444;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--text);
+  background: linear-gradient(180deg, #0b1324, #061015);
+}
+
+header {
+  padding: 16px;
+  text-align: center;
+}
+h1 { margin: 4px 0; font-size: 22px; }
+.sub { margin: 0; color: var(--muted); font-size: 14px; }
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(6, 16, 21, 0.8);
+  backdrop-filter: blur(8px);
+}
+.tab {
+  flex: 1; padding: 10px; border: 1px solid #1f2937;
+  background: #0a1922; color: var(--text);
+  border-radius: 8px; cursor: pointer;
+}
+.tab.active { border-color: var(--accent); outline: 1px solid var(--accent-2); }
+
+main { padding: 12px; }
+.panel { display: none; }
+.panel.active { display: block; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: var(--card);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+label {
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: 14px;
+}
+input, select {
+  padding: 10px; border-radius: 10px;
+  border: 1px solid #273244; background: #0b2030; color: var(--text);
+}
+input[type="checkbox"] { width: auto; }
+label.row { flex-direction: row; align-items: center; gap: 8px; }
+
+.group-title { grid-column: 1/-1; color: var(--muted); margin-top: 6px; }
+.rowgroup { grid-column: 1/-1; }
+
+.result {
+  margin-top: 14px;
+  background: #0a1a24; border: 1px solid #1f2937; border-radius: 12px;
+  padding: 12px;
+}
+.big { font-size: 22px; font-weight: 700; margin-top: 4px; }
+.note { color: var(--muted); margin-top: 6px; }
+.muted { color: var(--muted); }
+
+.hidden { display: none; }
+
+footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-top: 1px solid #1f2937; margin-top: 16px;
+}
+.install {
+  background: var(--accent-2); color: white; border: 0; border-radius: 10px;
+  padding: 10px 14px; font-weight: 600; cursor: pointer;
+}
+.warning { color: var(--danger); }
