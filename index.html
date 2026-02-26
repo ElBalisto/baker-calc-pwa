@@ -1,17 +1,23 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Basic meta -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Baker Calc</title>
+  <meta name="description" content="Water Temp, Starter Rise, Bulk Fermentation calculators for bakers">
+
+  <!-- Theme color -->
   <meta name="theme-color" content="#0f766e">
+
+  <!-- iOS PWA support -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  
-manifest.webmanifest
-  <link rel="apple-touch-icon" href="icon-192 sizes="512x512" href="icon</head>
+  <meta name="apple-mobile-web-app-title" content="Baker Calc">
 
-  <link rel="stylesheet" href="styles.css">
-  <title>Baker Calc</title>
+  <!-- iOS Home Screen icons (ROOT paths) -->
+  <link rel="apple-touch-icon" href="iconcon" sizes="512x512" href="<link rel="manifest" href="manifest -->
+  styles.css
 </head>
 <body>
   <header>
@@ -27,7 +33,6 @@ manifest.webmanifest
   </nav>
 
   <main>
-    <!-- Water Temperature -->
     <section id="water" class="panel active" aria-labelledby="Water Temperature">
       <h2>Water Temperature (DDT)</h2>
       <div class="grid">
@@ -47,7 +52,6 @@ manifest.webmanifest
         <label id="w_pref_wrap">Preferment °C
           <input id="w_pref" type="number" step="0.5" min="0" max="40" value="24">
         </label>
-
         <label>Mixing Method
           <select id="w_method">
             <option value="hand">Hand</option>
@@ -60,7 +64,6 @@ manifest.webmanifest
           <input id="w_custom" type="number" step="0.5" min="0" max="20" value="0">
         </label>
       </div>
-
       <div class="result">
         <div>Target Water Temperature:</div>
         <div id="w_out" class="big">— °C</div>
@@ -68,7 +71,6 @@ manifest.webmanifest
       </div>
     </section>
 
-    <!-- Starter Rise -->
     <section id="starter" class="panel" aria-labelledby="Starter Rise">
       <h2>Starter Rise Time</h2>
       <div class="grid">
@@ -88,7 +90,6 @@ manifest.webmanifest
             Hydration (computed) ≈ <span id="s_hydr">—</span>%
           </div>
         </div>
-
         <label>Temperature °C
           <input id="s_temp" type="number" step="0.5" min="10" max="35" value="26">
         </label>
@@ -99,15 +100,13 @@ manifest.webmanifest
           </select>
         </label>
       </div>
-
       <div class="result">
         <div>Estimated Peak:</div>
         <div id="s_out" class="big">— h</div>
-        <div class="note">Tip: tune the model constants in Settings after a few runs.</div>
+        <div class="note">Tip: tune constants in Settings after a few runs.</div>
       </div>
     </section>
 
-    <!-- Bulk Fermentation -->
     <section id="bulk" class="panel" aria-labelledby="Bulk Fermentation">
       <h2>Bulk Fermentation</h2>
       <div class="grid">
@@ -134,15 +133,13 @@ manifest.webmanifest
           <input id="b_salt" type="number" step="0.1" min="0" max="3.5" value="2.0">
         </label>
       </div>
-
       <div class="result">
         <div>Estimated Bulk:</div>
         <div id="b_out" class="big">— h</div>
-        <div class="note">Watch the dough: aim for ~30–60% rise with good aeration.</div>
+        <div class="note">Watch the dough: aim for ~30–60% rise.</div>
       </div>
     </section>
 
-    <!-- Settings -->
     <section id="settings" class="panel" aria-labelledby="Settings">
       <h2>Model Settings</h2>
       <div class="grid">
@@ -177,6 +174,6 @@ manifest.webmanifest
     <span class="muted">PWA • Works offline</span>
   </footer>
 
-  <script src="app.js" defer></script>
+  app.js</script>
 </body>
 </html>
