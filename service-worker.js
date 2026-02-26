@@ -1,4 +1,4 @@
-const CACHE = 'baker-calc-v2';
+const CACHE = 'baker-calc-v3';  // bump this if you update files
 const ASSETS = [
   './',
   './index.html',
@@ -10,16 +10,13 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-    )).then(() => self.clients.claim())
+    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
 });
 
@@ -28,8 +25,7 @@ self.addEventListener('fetch', (event) => {
   if (req.method === 'GET' && new URL(req.url).origin === self.location.origin) {
     event.respondWith(
       caches.match(req).then(cached => cached || fetch(req).then(resp => {
-        const copy = resp.clone();
-        caches.open(CACHE).then(cache => cache.put(req, copy));
+        caches.open(CACHE).then(cache => cache.put(req, resp.clone()));
         return resp;
       }))
     );
