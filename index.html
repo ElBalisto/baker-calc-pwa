@@ -5,24 +5,365 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Baker Calc</title>
 
-  <!-- INLINE CSS (no external file needed) -->
+  <!-- INLINE CSS -->
   <style>
-    body{
-      background:#111;
-      color:#fff;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      padding:40px;
+    :root{
+      --bg:#0b1521; --card:#0f172a; --muted:#94a3b8; --text:#e2e8f0;
+      --accent:#0ea5a4; --accent-2:#0f766e; --danger:#ef4444;
     }
-    h1{ color:#0ea5a4; margin-top:0; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(180deg,#0b1324,#061015);
+      color:var(--text); font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      padding-bottom:24px;
+    }
+    header{padding:16px; text-align:center}
+    h1{margin:4px 0; font-size:22px}
+    .sub{margin:0; color:var(--muted); font-size:14px}
+    .tabs{display:flex; gap:6px; padding:8px; position:sticky; top:0; z-index:5;
+      background:rgba(6,16,21,.8); backdrop-filter:blur(8px)}
+    .tab{flex:1; padding:10px; border:1px solid #1f2937; background:#0a1922;
+      color:var(--text); border-radius:8px; cursor:pointer}
+    .tab.active{border-color:var(--accent); outline:1px solid var(--accent-2)}
+    main{padding:12px}
+    .panel{display:none}
+    .panel.active{display:block}
+    .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; background:var(--card);
+      padding:12px; border-radius:12px; border:1px solid #1f2937}
+    @media (max-width:640px){ .grid{grid-template-columns:1fr} }
+    label{display:flex; flex-direction:column; gap:6px; font-size:14px}
+    input,select{padding:10px; border-radius:10px; border:1px solid #273244;
+      background:#0b2030; color:var(--text)}
+    input[type="checkbox"]{width:auto}
+    label.row{flex-direction:row; align-items:center; gap:8px}
+    .group-title{grid-column:1/-1; color:var(--muted); margin-top:6px}
+    .rowgroup{grid-column:1/-1}
+    .result{margin-top:14px; background:#0a1a24; border:1px solid #1f2937;
+      border-radius:12px; padding:12px}
+    .big{font-size:22px; font-weight:700; margin-top:4px}
+    .note{color:var(--muted); margin-top:6px}
+    .muted{color:var(--muted)}
+    .hidden{display:none}
+    footer{display:flex; align-items:center; justify-content:space-between; padding:10px 12px;
+      border-top:1px solid #1f2937; margin-top:16px}
+    .install{background:var(--accent-2); color:#fff; border:0; border-radius:10px;
+      padding:10px 14px; font-weight:600; cursor:pointer}
+    .warning{color:var(--danger)}
   </style>
 </head>
 <body>
-  <h1>Baker Calc</h1>
-  <p>If this text is styled, CSS works.</p>
+  <header>
+    <h1>🥖 Baker Calc</h1>
+    <p class="sub">Water Temp • Starter Rise • Bulk Fermentation</p>
+  </header>
 
-  <!-- INLINE JS (no external file needed) -->
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-target="water">Water Temp</button>
+    <button class="tab" data-target="starter">Starter Rise</button>
+    <button class="tab" data-target="bulk">Bulk Time</button>
+    <button class="tab" data-target="settings">Settings</button>
+  </nav>
+
+  <main>
+    <!-- Water Temperature -->
+    <section id="water" class="panel active" aria-labelledby="Water Temperature">
+      <h2>Water Temperature (DDT)</h2>
+      <div class="grid">
+        <label>Desired Dough Temp (DDT) °C
+          <input id="w_ddt" type="number" step="0.5" min="15" max="32" value="26">
+        </label>
+        <label>Room °C
+          <input id="w_room" type="number" step="0.5" min="0" max="40" value="25">
+        </label>
+        <label>Flour °C
+          <input id="w_flour" type="number" step="0.5" min="0" max="40" value="24">
+        </label>
+        <label class="row">
+          <input id="w_pref_on" type="checkbox" checked>
+          <span>Use Preferment / Sourdough</span>
+        </label>
+        <label id="w_pref_wrap">Preferment °C
+          <input id="w_pref" type="number" step="0.5" min="0" max="40" value="24">
+        </label>
+        <label>Mixing Method
+          <select id="w_method">
+            <option value="hand">Hand</option>
+            <option value="planetary">Planetary</option>
+            <option value="spiral">Spiral</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label id="w_custom_wrap" class="hidden">Custom Friction °C
+          <input id="w_custom" type="number" step="0.5" min="0" max="20" value="0">
+        </label>
+      </div>
+      <div class="result">
+        <div>Target Water Temperature:</div>
+        <div id="w_out" class="big">— °C</div>
+        <div id="w_note" class="note"></div>
+      </div>
+    </section>
+
+    <!-- Starter Rise -->
+    <section id="starter" class="panel" aria-labelledby="Starter Rise">
+      <h2>Starter Rise Time</h2>
+      <div class="grid">
+        <div class="rowgroup">
+          <div class="group-title">Feeding Ratio (seed : flour : water)</div>
+          <label>Seed
+            <input id="s_seed" type="number" step="1" min="1" max="50" value="1">
+          </label>
+          <label>Flour
+            <input id="s_flour" type="number" step="1" min="1" max="100" value="2">
+          </label>
+          <label>Water
+            <input id="s_water" type="number" step="1" min="1" max="100" value="2">
+          </label>
+          <div class="muted">
+            Inoculation ≈ <span id="s_inoc">—</span>% •
+            Hydration (computed) ≈ <span id="s_hydr">—</span>%
+          </div>
+        </div>
+        <label>Temperature °C
+          <input id="s_temp" type="number" step="0.5" min="10" max="35" value="26">
+        </label>
+        <label>Flour Type
+          <select id="s_flourtype">
+            <option value="white">White</option>
+            <option value="whole">Whole/Rye</option>
+          </select>
+        </label>
+      </div>
+      <div class="result">
+        <div>Estimated Peak:</div>
+        <div id="s_out" class="big">— h</div>
+        <div class="note">Tip: tune constants in Settings after a few runs.</div>
+      </div>
+    </section>
+
+    <!-- Bulk Fermentation -->
+    <section id="bulk" class="panel" aria-labelledby="Bulk Fermentation">
+      <h2>Bulk Fermentation</h2>
+      <div class="grid">
+        <label>Starter % of Flour
+          <input id="b_sp" type="number" step="0.5" min="1" max="40" value="20">
+        </label>
+        <label>Dough Temp (DDT) °C
+          <input id="b_ddt" type="number" step="0.5" min="15" max="32" value="26">
+        </label>
+        <label>Flour Type
+          <select id="b_flourtype">
+            <option value="white">White</option>
+            <option value="whole">Whole/Rye</option>
+          </select>
+        </label>
+        <label>Hydration
+          <select id="b_hydr_band">
+            <option value="normal">60–75%</option>
+            <option value="stiff">≤ 60%</option>
+            <option value="high">≥ 75%</option>
+          </select>
+        </label>
+        <label>Salt %
+          <input id="b_salt" type="number" step="0.1" min="0" max="3.5" value="2.0">
+        </label>
+      </div>
+      <div class="result">
+        <div>Estimated Bulk:</div>
+        <div id="b_out" class="big">— h</div>
+        <div class="note">Watch the dough: aim for ~30–60% rise.</div>
+      </div>
+    </section>
+
+    <!-- Settings -->
+    <section id="settings" class="panel" aria-labelledby="Settings">
+      <h2>Model Settings</h2>
+      <div class="grid">
+        <div class="group-title">Starter Model</div>
+        <label>k (h)
+          <input id="set_st_k" type="number" step="0.1" min="0.5" max="4" value="1.7">
+        </label>
+        <label>α
+          <input id="set_st_a" type="number" step="0.05" min="0.4" max="1.2" value="0.8">
+        </label>
+        <label>Q10
+          <input id="set_q10" type="number" step="0.05" min="1.5" max="2.5" value="2.0">
+        </label>
+        <label>Starter Tref °C
+          <input id="set_st_tref" type="number" step="0.5" min="20" max="30" value="26">
+        </label>
+
+        <div class="group-title">Bulk Model</div>
+        <label>c (h)
+          <input id="set_b_c" type="number" step="0.1" min="0.5" max="4" value="1.5">
+        </label>
+        <label>β
+          <input id="set_b_b" type="number" step="0.05" min="0.3" max="1.0" value="0.6">
+        </label>
+      </div>
+      <div class="note">Values persist on this device (localStorage).</div>
+    </section>
+  </main>
+
+  <footer>
+    <button id="installBtn" class="install hidden">Install App</button>
+    <span class="muted">Inline build • No external files</span>
+  </footer>
+
+  <!-- INLINE JS -->
   <script>
-    console.log("Baker Calc JS loaded (inline) ✔️");
+    // Small key-value store (localStorage wrapper)
+    const LS = {
+      get(k, d){ try{ const v = localStorage.getItem(k); return v!=null ? JSON.parse(v) : d }catch{ return d } },
+      set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch{} }
+    };
+
+    // Tab navigation
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.tab').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+          document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById(btn.dataset.target).classList.add('active');
+        });
+      });
+
+      restoreValues();
+      wireWater(); wireStarter(); wireBulk(); wireSettings();
+      computeWater(); computeStarter(); computeBulk();
+    });
+
+    // ---------- Math engine ----------
+    function waterTempC(ddt, room, flour, prefOn, pref, method, customFriction){
+      const frictionMap = { hand:1.0, planetary:9.0, spiral:11.0 };
+      const friction = method==='custom' ? (Number(customFriction)||0) : (frictionMap[method] ?? 1.0);
+      const n = prefOn ? 4.0 : 3.0;
+      const sum = room + flour + (prefOn ? pref : 0) + friction;
+      return ddt * n - sum;
+    }
+    function starterPeakHours({ seed, flour, water, tempC, flourType, k, alpha, Q10, Tref }){
+      const total = seed + flour + water;
+      const inoc = total>0 ? seed/total : 0.2;
+      const hydration = flour>0 ? (water/flour)*100 : 100;
+      const flourFactor = (flourType==='white') ? 1.0 : 0.85;
+      const hydrationFactor = (hydration>=90) ? 1.00 : (hydration>=70 ? 1.07 : 1.15);
+      const inocClamped = Math.min(Math.max(inoc, 0.01), 0.5);
+      const tempFactor = Math.pow(Q10, (Tref - tempC)/10.0);
+      const hours = k * Math.pow(inocClamped, -alpha) * tempFactor * flourFactor * hydrationFactor;
+      return { hours, inocPct: inocClamped*100, hydrationPct: hydration };
+    }
+    function bulkHours({ starterPct, ddtC, flourType, hydrBand, saltPct, c, beta, Q10 }){
+      const flourFactor = (flourType==='white') ? 1.0 : 0.9;
+      const hydrationFactor = hydrBand==='stiff' ? 1.10 : (hydrBand==='high' ? 0.90 : 1.00);
+      const saltFactor = saltPct>=3.0 ? 1.10 : (saltPct>=2.3 ? 1.05 : 1.00);
+      const tref = 26.0;
+      const sp = Math.max(starterPct, 1.0);
+      const tempFactor = Math.pow(Q10, (tref - ddtC)/10.0);
+      return c * Math.pow(sp/100.0, -beta) * tempFactor * flourFactor * hydrationFactor * saltFactor;
+    }
+
+    // ---------- Water ----------
+    function wireWater(){
+      ['w_ddt','w_room','w_flour','w_pref_on','w_pref','w_method','w_custom']
+        .forEach(id => document.getElementById(id).addEventListener('input', computeWater));
+      document.getElementById('w_method').addEventListener('change', ()=>{
+        const show = document.getElementById('w_method').value==='custom';
+        document.getElementById('w_custom_wrap').classList.toggle('hidden', !show);
+        computeWater();
+      });
+      document.getElementById('w_pref_on').addEventListener('change', ()=>{
+        const on = document.getElementById('w_pref_on').checked;
+        document.getElementById('w_pref_wrap').classList.toggle('hidden', !on);
+        computeWater();
+      });
+    }
+    function computeWater(){
+      const ddt = num('w_ddt'), room = num('w_room'), flour = num('w_flour');
+      const prefOn = document.getElementById('w_pref_on').checked;
+      const pref = num('w_pref');
+      const method = val('w_method');
+      const custom = num('w_custom');
+      const wt = waterTempC(ddt, room, flour, prefOn, pref, method, custom);
+      document.getElementById('w_out').textContent = `${wt.toFixed(1)} °C`;
+      const note = document.getElementById('w_note'); note.textContent=''; note.classList.remove('warning');
+      if (wt < 0){ note.textContent='Very cold water—use ice/chilled water to hit DDT.'; note.classList.add('warning'); }
+      else if (wt > 60){ note.textContent='Very warm water—recheck inputs/friction.'; note.classList.add('warning'); }
+      LS.set('water', { ddt, room, flour, prefOn, pref, method, custom });
+    }
+
+    // ---------- Starter ----------
+    function wireStarter(){
+      ['s_seed','s_flour','s_water','s_temp','s_flourtype']
+        .forEach(id => document.getElementById(id).addEventListener('input', computeStarter));
+    }
+    function computeStarter(){
+      const k=num('set_st_k'), alpha=num('set_st_a'), Q10=num('set_q10'), Tref=num('set_st_tref');
+      const seed=num('s_seed'), flour=num('s_flour'), water=num('s_water');
+      const tempC=num('s_temp'), flourTypeSel=val('s_flourtype');
+      const flourType=(flourTypeSel==='white')?'white':'whole';
+      const { hours, inocPct, hydrationPct } = starterPeakHours({ seed, flour, water, tempC, flourType, k, alpha, Q10, Tref });
+      document.getElementById('s_out').textContent = `${hours.toFixed(1)} h`;
+      document.getElementById('s_inoc').textContent = inocPct.toFixed(1);
+      document.getElementById('s_hydr').textContent = hydrationPct.toFixed(0);
+      LS.set('starter', { seed, flour, water, tempC, flourType: flourTypeSel });
+    }
+
+    // ---------- Bulk ----------
+    function wireBulk(){
+      ['b_sp','b_ddt','b_flourtype','b_hydr_band','b_salt']
+        .forEach(id => document.getElementById(id).addEventListener('input', computeBulk));
+    }
+    function computeBulk(){
+      const c=num('set_b_c'), beta=num('set_b_b'), Q10=num('set_q10');
+      const starterPct=num('b_sp'), ddtC=num('b_ddt'), flourTypeSel=val('b_flourtype');
+      const hydrBand=val('b_hydr_band'), saltPct=num('b_salt');
+      const flourType=(flourTypeSel==='white')?'white':'whole';
+      const hours = bulkHours({ starterPct, ddtC, flourType, hydrBand, saltPct, c, beta, Q10 });
+      document.getElementById('b_out').textContent = `${hours.toFixed(1)} h`;
+      LS.set('bulk', { starterPct, ddtC, flourType: flourTypeSel, hydrBand, saltPct });
+    }
+
+    // ---------- Settings ----------
+    function wireSettings(){
+      ['set_st_k','set_st_a','set_q10','set_st_tref','set_b_c','set_b_b']
+        .forEach(id => document.getElementById(id).addEventListener('input', ()=>{
+          saveSettings(); computeStarter(); computeBulk();
+        }));
+    }
+    function saveSettings(){
+      const settings = {
+        st_k:num('set_st_k'), st_a:num('set_st_a'),
+        q10:num('set_q10'), st_tref:num('set_st_tref'),
+        b_c:num('set_b_c'), b_b:num('set_b_b')
+      };
+      LS.set('settings', settings);
+    }
+    function restoreValues(){
+      const S=LS.get('settings',null);
+      if(S){ setVal('set_st_k',S.st_k); setVal('set_st_a',S.st_a);
+             setVal('set_q10',S.q10); setVal('set_st_tref',S.st_tref);
+             setVal('set_b_c',S.b_c); setVal('set_b_b',S.b_b); }
+      const W=LS.get('water',null);
+      if(W){ setVal('w_ddt',W.ddt); setVal('w_room',W.room); setVal('w_flour',W.flour);
+             setChecked('w_pref_on',W.prefOn); setVal('w_pref',W.pref);
+             setVal('w_method',W.method); setVal('w_custom',W.custom);
+             document.getElementById('w_pref_wrap').classList.toggle('hidden',!W.prefOn);
+             document.getElementById('w_custom_wrap').classList.toggle('hidden',W.method!=='custom'); }
+      const St=LS.get('starter',null);
+      if(St){ setVal('s_seed',St.seed); setVal('s_flour',St.flour); setVal('s_water',St.water);
+              setVal('s_temp',St.tempC); setVal('s_flourtype',St.flourType); }
+      const B=LS.get('bulk',null);
+      if(B){ setVal('b_sp',B.starterPct); setVal('b_ddt',B.ddtC); setVal('b_flourtype',B.flourType);
+             setVal('b_hydr_band',B.hydrBand); setVal('b_salt',B.saltPct); }
+    }
+
+    // Helpers
+    function num(id){ return Number(document.getElementById(id).value); }
+    function val(id){ return document.getElementById(id).value; }
+    function setVal(id,v){ document.getElementById(id).value=v; }
+    function setChecked(id,v){ document.getElementById(id).checked=!!v; }
   </script>
 </body>
 </html>
