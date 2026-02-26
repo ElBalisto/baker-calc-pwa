@@ -1,4 +1,4 @@
-const CACHE = 'baker-calc-v3';  // bump this if you update files
+const CACHE = 'baker-calc-v4';  // bump this if you update files
 const ASSETS = [
   './',
   './index.html',
