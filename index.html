@@ -144,14 +144,6 @@
     /* Scale actions */
     .sc-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
 
-    /* Saved recipes */
-    .recipe-save-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
-    .recipe-save-row input { flex: 1; }
-    .saved-recipe-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-    .saved-recipe-item:last-child { border-bottom: none; }
-    .saved-recipe-name { flex: 1; color: var(--text); }
-    .no-recipes { font-size: 13px; color: var(--muted); padding: 4px 0; }
-
     /* Stretch & fold schedule */
     .sf-schedule { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
     .sf-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 10px; }
@@ -408,15 +400,6 @@
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">Saved Recipes</div>
-        <div class="recipe-save-row">
-          <input id="sc_recipe_name" type="text" placeholder="Recipe name…" style="text-transform:none;letter-spacing:0;font-size:14px">
-          <button class="btn-accent" id="sc_save_btn">Save</button>
-        </div>
-        <div id="sc_saved_list"></div>
-      </div>
-
       <div class="result">
         <div class="result-label">Scaled Recipe</div>
         <div id="sc_out"></div>
@@ -472,7 +455,6 @@
       document.getElementById('sc_add_addin').addEventListener('click',()=>{scAddins.push({name:'',pct:0});renderAddins();computeScale();});
       wireWater();wireStarter();wireBulk();wirePreferment();wireSettings();wireScale();
       computeWater();computeStarter();computeBulk();computePreferment();computeScale();
-      renderSavedRecipes();
       if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js').catch(console.error);}
       let deferredPrompt;
       window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').classList.remove('hidden');});
@@ -514,7 +496,7 @@
     function renderAddins(){const c=document.getElementById('sc_addins_container');if(!c)return;c.innerHTML='';scAddins.forEach((a,i)=>{const d=document.createElement('div');d.className='sc-addin';d.innerHTML=`<input type="text" placeholder="Ingredient name" value="${esc(a.name)}" style="flex:1;text-transform:none;letter-spacing:0"><input type="number" step="0.5" min="0" value="${a.pct||0}" style="width:88px;flex:0 0 auto"><span class="unit">%</span><button class="btn-danger" title="Remove">✕</button>`;d.querySelector('input[type="text"]').addEventListener('input',e=>{scAddins[i].name=e.target.value;computeScale();});d.querySelector('input[type="number"]').addEventListener('input',e=>{scAddins[i].pct=Number(e.target.value);computeScale();});d.querySelector('.btn-danger').addEventListener('click',()=>{scAddins.splice(i,1);if(scAddins.length===0)scAddins.push({name:'',pct:0});renderAddins();computeScale();});c.appendChild(d);});}
     function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
 
-    function wireScale(){['sc_hyd','sc_salt_pct','sc_starter_pct','sc_starter_hyd','sc_f1p','sc_f2p','sc_f3p','sc_tgt','sc_loafsize','sc_nloaves'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));['sc_mode','sc_f1t','sc_f2t','sc_f3t'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(id==='sc_mode')updateScaleMode();computeScale();}));document.getElementById('sc_save_btn').addEventListener('click',saveRecipe);document.getElementById('sc_copy_btn').addEventListener('click',copyRecipeText);document.getElementById('sc_share_btn').addEventListener('click',shareRecipe);}
+    function wireScale(){['sc_hyd','sc_salt_pct','sc_starter_pct','sc_starter_hyd','sc_f1p','sc_f2p','sc_f3p','sc_tgt','sc_loafsize','sc_nloaves'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));['sc_mode','sc_f1t','sc_f2t','sc_f3t'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(id==='sc_mode')updateScaleMode();computeScale();}));document.getElementById('sc_copy_btn').addEventListener('click',copyRecipeText);document.getElementById('sc_share_btn').addEventListener('click',shareRecipe);}
     function updateScaleMode(){const m=val('sc_mode');document.getElementById('sc_tgt_label').classList.toggle('hidden',m==='loaves');document.getElementById('sc_loafsize_wrap').classList.toggle('hidden',m!=='loaves');document.getElementById('sc_nloaves_wrap').classList.toggle('hidden',m!=='loaves');document.getElementById('sc_tgt_lbl_txt').textContent=m==='flour'?'Total flour (g)':'Total dough (g)';}
     function scFmt(n){return n<10?n.toFixed(1):String(Math.round(n));}
 
@@ -563,12 +545,6 @@
 
     function shareRecipe(){const d={hyd:num('sc_hyd'),f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),sp:num('sc_starter_pct'),sh:num('sc_starter_hyd'),salt:num('sc_salt_pct'),mode:val('sc_mode'),tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves'),addins:scAddins.filter(a=>a.pct>0)};const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(d))));const url=`${location.origin}${location.pathname}#r=${encoded}`;if(navigator.share){navigator.share({title:'Baker Calc Recipe',url}).catch(()=>copyToClip(url,'sc_share_btn','URL Copied!','Share URL'));}else{copyToClip(url,'sc_share_btn','URL Copied!','Share URL');}}
     function copyToClip(text,btnId,ok,reset){navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById(btnId);b.textContent=ok;setTimeout(()=>b.textContent=reset,2500);}).catch(()=>alert(text));}
-
-    // ── Saved Recipes ─────────────────────────────────────────────────────
-    function saveRecipe(){const name=document.getElementById('sc_recipe_name').value.trim();if(!name){document.getElementById('sc_recipe_name').focus();return;}const recipe={name,data:{hyd:num('sc_hyd'),f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),starterPct:num('sc_starter_pct'),starterHyd:num('sc_starter_hyd'),saltPct:num('sc_salt_pct'),addins:[...scAddins],mode:val('sc_mode'),tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves')}};const recipes=LS.get('recipes',[]);const idx=recipes.findIndex(r=>r.name===name);if(idx>=0)recipes[idx]=recipe;else recipes.push(recipe);LS.set('recipes',recipes);document.getElementById('sc_recipe_name').value='';renderSavedRecipes();}
-    function loadRecipe(name){const r=LS.get('recipes',[]).find(r=>r.name===name);if(!r)return;applyScaleData(r.data);renderAddins();updateScaleMode();computeScale();}
-    function deleteRecipe(name){LS.set('recipes',LS.get('recipes',[]).filter(r=>r.name!==name));renderSavedRecipes();}
-    function renderSavedRecipes(){const recipes=LS.get('recipes',[]);const el=document.getElementById('sc_saved_list');if(!el)return;if(recipes.length===0){el.innerHTML='<div class="no-recipes">No saved recipes yet.</div>';return;}el.innerHTML=recipes.map(r=>`<div class="saved-recipe-item"><span class="saved-recipe-name">${esc(r.name)}</span><button class="btn-outline" onclick="loadRecipe(${JSON.stringify(r.name)})">Load</button><button class="btn-danger" onclick="deleteRecipe(${JSON.stringify(r.name)})">✕</button></div>`).join('');}
 
     // ── Restore values ────────────────────────────────────────────────────
     function restoreValues(){
