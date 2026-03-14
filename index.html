@@ -1,33 +1,31 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Baker Calc</title>
-
-  <!-- PWA meta/links -->
   <meta name="theme-color" content="#0f766e">
   <icon-192 class="png"></icon-192>
   <icon-512 class="png"></icon-512>
   <manifest class="webmanifest"></manifest>
-
   <style>
     :root {
-      --bg: #080f1a;
-      --surface: #0d1b2a;
-      --card: #101e30;
-      --border: #1a3148;
-      --border-soft: #253d57;
-      --muted: #4d6a82;
-      --text-2: #7a9ab5;
-      --text: #dde8f0;
-      --accent: #0ea5a4;
-      --accent-glow: rgba(14,165,164,.12);
-      --accent-2: #0f766e;
-      --danger: #ef4444;
-      --radius: 16px;
-      --radius-sm: 10px;
+      --bg: #080f1a; --surface: #0d1b2a; --card: #101e30;
+      --border: #1a3148; --border-soft: #253d57;
+      --muted: #4d6a82; --text-2: #7a9ab5; --text: #dde8f0;
+      --accent: #0ea5a4; --accent-glow: rgba(14,165,164,.12); --accent-2: #0f766e;
+      --danger: #ef4444; --radius: 16px; --radius-sm: 10px;
     }
+    [data-theme="light"] {
+      --bg: #f5f0e8; --surface: #fffdf8; --card: #ffffff;
+      --border: #e2d9ce; --border-soft: #c9bdb0;
+      --muted: #8a7b6a; --text-2: #6b5d4f; --text: #1e140a;
+      --accent: #0d8f8e; --accent-glow: rgba(13,143,142,.1); --accent-2: #0a6b64;
+      --danger: #dc2626;
+    }
+    [data-theme="light"] body { background: radial-gradient(ellipse 120% 60% at 50% 0%, #ede5d8 0%, #f5f0e8 55%); }
+    [data-theme="light"] .tabs-wrap { background: rgba(245,240,232,.92); }
+    [data-theme="light"] .result { background: linear-gradient(135deg, #eee8dd 0%, #f5f1ea 100%); }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { height: 100%; }
@@ -39,244 +37,161 @@
       padding-bottom: 48px;
     }
 
-    /* ── Header ─────────────────────────────── */
-    header {
-      padding: 32px 20px 20px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-    }
+    /* Header */
+    header { padding: 32px 20px 20px; text-align: center; border-bottom: 1px solid var(--border); position: relative; }
     .header-emoji { font-size: 40px; line-height: 1; display: block; }
     h1 { font-size: 26px; font-weight: 800; letter-spacing: -.5px; margin-top: 10px; }
     .sub { color: var(--text-2); font-size: 13px; margin-top: 5px; }
+    .theme-toggle {
+      position: absolute; top: 20px; right: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 8px 12px; cursor: pointer;
+      font-size: 16px; color: var(--text-2); transition: border-color .15s, color .15s;
+    }
+    .theme-toggle:hover { border-color: var(--border-soft); color: var(--text); }
 
-    /* ── Tab nav ─────────────────────────────── */
+    /* Tabs */
     .tabs-wrap {
       position: sticky; top: 0; z-index: 10;
-      background: rgba(8,15,26,.9);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
+      background: rgba(8,15,26,.9); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border); padding: 10px 16px;
     }
-    .tabs {
-      display: flex; gap: 6px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
+    .tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
     .tabs::-webkit-scrollbar { display: none; }
     .tab {
-      flex: 0 0 auto;
-      padding: 7px 16px;
-      font-size: 13px; font-weight: 500;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-2);
-      border-radius: 20px;
-      cursor: pointer;
-      white-space: nowrap;
+      flex: 0 0 auto; padding: 7px 16px; font-size: 13px; font-weight: 500;
+      border: 1px solid var(--border); background: transparent; color: var(--text-2);
+      border-radius: 20px; cursor: pointer; white-space: nowrap;
       transition: color .15s, border-color .15s, background .15s;
     }
     .tab:hover { color: var(--text); border-color: var(--border-soft); }
-    .tab.active {
-      background: var(--accent-glow);
-      border-color: var(--accent);
-      color: var(--accent);
-      font-weight: 600;
-    }
+    .tab.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 
-    /* ── Main layout ─────────────────────────── */
-    main {
-      max-width: 620px;
-      margin: 0 auto;
-      padding: 20px 16px 8px;
-    }
+    /* Layout */
+    main { max-width: 620px; margin: 0 auto; padding: 20px 16px 8px; }
     .panel { display: none; }
     .panel.active { display: flex; flex-direction: column; gap: 14px; }
-    .panel > h2 {
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .08em;
-      color: var(--muted);
-      padding: 0 2px;
-    }
+    .panel > h2 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 0 2px; }
 
-    /* ── Cards ───────────────────────────────── */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-    }
-    .card-title {
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .08em;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
+    /* Cards */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .card-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 16px; }
 
-    /* ── Field grid ──────────────────────────── */
-    .fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+    /* Fields grid */
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     @media (max-width: 480px) { .fields { grid-template-columns: 1fr; } }
     .full { grid-column: 1 / -1; }
 
-    /* ── Labels & inputs ─────────────────────── */
-    label {
-      display: flex; flex-direction: column; gap: 6px;
-      font-size: 12px; font-weight: 500;
-      color: var(--text-2);
-      text-transform: uppercase; letter-spacing: .05em;
-    }
+    /* Inputs */
+    label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 500; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
     input, select {
-      padding: 11px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 15px; font-weight: 500;
-      width: 100%;
-      transition: border-color .15s, box-shadow .15s;
-      -webkit-appearance: none;
-      appearance: none;
+      padding: 11px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); font-size: 15px; font-weight: 500;
+      width: 100%; transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; appearance: none;
     }
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-    input[type="checkbox"] {
-      width: 18px; height: 18px; flex: 0 0 auto;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-    label.row {
-      flex-direction: row; align-items: center;
-      gap: 10px; text-transform: none; letter-spacing: 0;
-      font-size: 14px; font-weight: 400; color: var(--text);
-    }
+    input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    input[type="checkbox"] { width: 18px; height: 18px; flex: 0 0 auto; accent-color: var(--accent); cursor: pointer; }
+    label.row { flex-direction: row; align-items: center; gap: 10px; text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 400; color: var(--text); }
     select {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%234d6a82' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 32px;
-      cursor: pointer;
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer;
     }
 
-    /* ── Section divider inside card ─────────── */
-    .section-sep {
-      grid-column: 1 / -1;
-      border: none; border-top: 1px solid var(--border);
-      margin: 4px 0;
-    }
-    .section-label {
-      grid-column: 1 / -1;
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .07em;
-      color: var(--muted);
-    }
-
-    /* ── Stat row (inoculation etc.) ─────────── */
-    .stat-row {
-      grid-column: 1 / -1;
-      font-size: 13px; color: var(--text-2);
-      padding: 4px 0;
-    }
+    /* Dividers */
+    .section-sep { grid-column: 1 / -1; border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+    .section-label { grid-column: 1 / -1; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+    .stat-row { grid-column: 1 / -1; font-size: 13px; color: var(--text-2); padding: 4px 0; }
     .stat-row em { font-style: normal; color: var(--text); font-weight: 500; }
 
-    /* ── Result card ─────────────────────────── */
+    /* Result card */
     .result {
       background: linear-gradient(135deg, #0b2538 0%, #0d1f2e 100%);
-      border: 1px solid var(--border-soft);
-      border-radius: var(--radius);
-      padding: 20px 22px;
-      position: relative;
-      overflow: hidden;
+      border: 1px solid var(--border-soft); border-radius: var(--radius); padding: 20px 22px;
+      position: relative; overflow: hidden;
     }
-    .result::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    }
-    .result-label {
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .08em;
-      color: var(--text-2);
-    }
-    .result-value {
-      font-size: 42px; font-weight: 800;
-      color: var(--accent);
-      line-height: 1.1;
-      margin: 8px 0 4px;
-      letter-spacing: -.5px;
-    }
-    .result-note {
-      font-size: 13px; color: var(--muted);
-      margin-top: 6px;
-    }
+    .result::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+    .result-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--text-2); }
+    .result-value { font-size: 42px; font-weight: 800; color: var(--accent); line-height: 1.1; margin: 8px 0 4px; letter-spacing: -.5px; }
+    .result-note { font-size: 13px; color: var(--muted); margin-top: 6px; }
     .result-note.warning { color: var(--danger); }
 
-    /* ── Scale add-ins ───────────────────────── */
-    .sc-addin {
-      display: flex; gap: 8px; align-items: center;
-      grid-column: 1 / -1;
-    }
-    .sc-addin input[type="text"] {
-      flex: 1;
-      text-transform: none; letter-spacing: 0;
-    }
+    /* Buttons */
+    .btn-accent { padding: 10px 18px; background: var(--accent); color: #fff; border: 0; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity .15s; }
+    .btn-accent:hover { opacity: .85; }
+    .btn-outline { padding: 9px 16px; background: transparent; color: var(--text-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s; }
+    .btn-outline:hover { color: var(--text); border-color: var(--border-soft); }
+    .btn-danger { padding: 6px 10px; background: transparent; color: var(--danger); border: 1px solid transparent; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; transition: border-color .15s; }
+    .btn-danger:hover { border-color: var(--danger); }
+
+    /* Scale add-ins */
+    .sc-addin { display: flex; gap: 8px; align-items: center; }
+    .sc-addin input[type="text"] { flex: 1; text-transform: none; letter-spacing: 0; }
     .sc-addin input[type="number"] { width: 88px; flex: 0 0 auto; }
     .sc-addin .unit { font-size: 13px; color: var(--muted); white-space: nowrap; text-transform: none; letter-spacing: 0; }
 
-    /* ── Scale table ─────────────────────────── */
-    .sc-table {
-      width: 100%; border-collapse: collapse;
-      margin-top: 14px; font-size: 14px;
-    }
-    .sc-table th {
-      font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: .07em;
-      color: var(--muted);
-      padding: 0 6px 10px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
+    /* Scale table */
+    .sc-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 14px; }
+    .sc-table th { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); padding: 0 6px 10px; border-bottom: 1px solid var(--border); text-align: left; }
     .sc-table th:nth-child(2), .sc-table th:nth-child(3) { text-align: right; }
     .sc-table td { padding: 9px 6px; border-bottom: 1px solid rgba(26,49,72,.6); }
     .sc-pct { color: var(--muted); text-align: right; font-size: 12px; }
     .sc-val { text-align: right; font-weight: 600; color: var(--text); }
-    .sc-total td {
-      border-bottom: none;
-      border-top: 1px solid var(--border-soft);
-      padding-top: 10px; font-weight: 700;
-      color: var(--accent);
-    }
+    .sc-val.warning { color: var(--danger); }
+    .sc-total td { border-bottom: none; border-top: 1px solid var(--border-soft); padding-top: 10px; font-weight: 700; color: var(--accent); }
+    .sc-hydration { margin-top: 12px; font-size: 13px; color: var(--text-2); padding: 10px 0 0; border-top: 1px solid var(--border); }
+    .sc-hydration em { font-style: normal; color: var(--accent); font-weight: 600; }
 
-    /* ── Footer ──────────────────────────────── */
-    footer {
-      display: flex; align-items: center; justify-content: space-between;
-      max-width: 620px; margin: 20px auto 0;
-      padding: 14px 20px;
-      border-top: 1px solid var(--border);
-    }
+    /* Scale actions */
+    .sc-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+    /* Saved recipes */
+    .recipe-save-row { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .recipe-save-row input { flex: 1; }
+    .saved-recipe-item { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .saved-recipe-item:last-child { border-bottom: none; }
+    .saved-recipe-name { flex: 1; color: var(--text); }
+    .no-recipes { font-size: 13px; color: var(--muted); padding: 4px 0; }
+
+    /* Stretch & fold schedule */
+    .sf-schedule { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+    .sf-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 10px; }
+    .sf-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid rgba(26,49,72,.4); color: var(--text-2); }
+    .sf-row:last-child { border-bottom: none; }
+    .sf-row em { font-style: normal; color: var(--text); font-weight: 500; }
+
+    /* Footer */
+    footer { display: flex; align-items: center; justify-content: space-between; max-width: 620px; margin: 20px auto 0; padding: 14px 20px; border-top: 1px solid var(--border); }
     .footer-text { font-size: 12px; color: var(--muted); }
-    .install {
-      background: var(--accent-2); color: #fff;
-      border: 0; border-radius: 20px;
-      padding: 9px 20px; font-size: 13px; font-weight: 600;
-      cursor: pointer;
-    }
+    .install { background: var(--accent-2); color: #fff; border: 0; border-radius: 20px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
     .hidden { display: none !important; }
+
+    /* Print */
+    @media print {
+      .theme-toggle, .tabs-wrap, footer, .sc-actions, .recipe-save-row { display: none !important; }
+      .panel { display: none !important; }
+      #scale { display: flex !important; }
+      #scale > .card { display: none !important; }
+      .result { display: block !important; background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; }
+      .result::before { display: none !important; }
+      body { background: #fff !important; color: #000 !important; }
+      .sc-table th, .sc-table td { color: #000 !important; }
+      .sc-pct { color: #666 !important; }
+      .sc-total td { color: #006060 !important; }
+      .sc-hydration { color: #444 !important; }
+      .sc-hydration em { color: #006060 !important; }
+      main { max-width: 100%; padding: 0; }
+      header { padding: 12px 20px; }
+    }
   </style>
 </head>
 <body>
 
   <header>
+    <button class="theme-toggle" id="themeToggle" title="Toggle light/dark">☀️</button>
     <span class="header-emoji">🥖</span>
     <h1>Baker Calc</h1>
-    <p class="sub">Water Temp · Starter Rise · Bulk Fermentation · Recipe Scale</p>
+    <p class="sub">Water Temp · Starter Rise · Bulk · Preferment · Recipe Scale</p>
   </header>
 
   <div class="tabs-wrap">
@@ -284,6 +199,7 @@
       <button class="tab active" data-target="water">Water Temp</button>
       <button class="tab" data-target="starter">Starter Rise</button>
       <button class="tab" data-target="bulk">Bulk Time</button>
+      <button class="tab" data-target="preferment">Preferment</button>
       <button class="tab" data-target="scale">Scale</button>
       <button class="tab" data-target="settings">Settings</button>
     </nav>
@@ -296,15 +212,9 @@
       <h2>Water Temperature (DDT)</h2>
       <div class="card">
         <div class="fields">
-          <label>DDT °C
-            <input id="w_ddt" type="number" step="0.5" min="15" max="32" value="26">
-          </label>
-          <label>Room °C
-            <input id="w_room" type="number" step="0.5" min="0" max="40" value="25">
-          </label>
-          <label>Flour °C
-            <input id="w_flour" type="number" step="0.5" min="0" max="40" value="24">
-          </label>
+          <label>DDT °C <input id="w_ddt" type="number" step="0.5" min="15" max="32" value="26"></label>
+          <label>Room °C <input id="w_room" type="number" step="0.5" min="0" max="40" value="25"></label>
+          <label>Flour °C <input id="w_flour" type="number" step="0.5" min="0" max="40" value="24"></label>
           <label>Mixing Method
             <select id="w_method">
               <option value="hand">Hand</option>
@@ -317,14 +227,9 @@
             <input id="w_custom" type="number" step="0.5" min="0" max="20" value="0">
           </label>
           <div class="full">
-            <label class="row">
-              <input id="w_pref_on" type="checkbox" checked>
-              <span>Use Preferment / Sourdough</span>
-            </label>
+            <label class="row"><input id="w_pref_on" type="checkbox" checked><span>Use Preferment / Sourdough</span></label>
           </div>
-          <label id="w_pref_wrap">Preferment °C
-            <input id="w_pref" type="number" step="0.5" min="0" max="40" value="24">
-          </label>
+          <label id="w_pref_wrap">Preferment °C <input id="w_pref" type="number" step="0.5" min="0" max="40" value="24"></label>
         </div>
       </div>
       <div class="result">
@@ -340,24 +245,13 @@
       <div class="card">
         <div class="fields">
           <div class="section-label">Feeding Ratio (seed : flour : water)</div>
-          <label>Seed
-            <input id="s_seed" type="number" step="1" min="1" max="50" value="1">
-          </label>
-          <label>Flour
-            <input id="s_flour" type="number" step="1" min="1" max="100" value="2">
-          </label>
-          <label>Water
-            <input id="s_water" type="number" step="1" min="1" max="100" value="2">
-          </label>
-          <div class="stat-row">
-            Inoculation ≈ <em><span id="s_inoc">—</span>%</em> &nbsp;·&nbsp;
-            Hydration ≈ <em><span id="s_hydr">—</span>%</em>
-          </div>
+          <label>Seed <input id="s_seed" type="number" step="1" min="1" max="50" value="1"></label>
+          <label>Flour <input id="s_flour" type="number" step="1" min="1" max="100" value="2"></label>
+          <label>Water <input id="s_water" type="number" step="1" min="1" max="100" value="2"></label>
+          <div class="stat-row">Inoculation ≈ <em><span id="s_inoc">—</span>%</em> &nbsp;·&nbsp; Hydration ≈ <em><span id="s_hydr">—</span>%</em></div>
           <hr class="section-sep">
           <div class="section-label">Conditions</div>
-          <label>Temperature °C
-            <input id="s_temp" type="number" step="0.5" min="10" max="35" value="26">
-          </label>
+          <label>Temperature °C <input id="s_temp" type="number" step="0.5" min="10" max="35" value="26"></label>
           <label>Flour Type
             <select id="s_flourtype">
               <option value="white">White</option>
@@ -378,12 +272,8 @@
       <h2>Bulk Fermentation</h2>
       <div class="card">
         <div class="fields">
-          <label>Starter % of Flour
-            <input id="b_sp" type="number" step="0.5" min="1" max="40" value="20">
-          </label>
-          <label>Dough Temp °C
-            <input id="b_ddt" type="number" step="0.5" min="15" max="32" value="26">
-          </label>
+          <label>Starter % of Flour <input id="b_sp" type="number" step="0.5" min="1" max="40" value="20"></label>
+          <label>Dough Temp °C <input id="b_ddt" type="number" step="0.5" min="15" max="32" value="26"></label>
           <label>Flour Type
             <select id="b_flourtype">
               <option value="white">White</option>
@@ -397,15 +287,39 @@
               <option value="high">≥ 75% (high)</option>
             </select>
           </label>
-          <label>Salt %
-            <input id="b_salt" type="number" step="0.1" min="0" max="3.5" value="2.0">
-          </label>
+          <label>Salt % <input id="b_salt" type="number" step="0.1" min="0" max="3.5" value="2.0"></label>
         </div>
       </div>
       <div class="result">
         <div class="result-label">Estimated Bulk</div>
         <div id="b_out" class="result-value">— h</div>
-        <div class="result-note">Watch the dough — aim for ~30–60% rise.</div>
+        <div id="b_schedule"></div>
+      </div>
+    </section>
+
+    <!-- Preferment Calculator -->
+    <section id="preferment" class="panel">
+      <h2>Preferment Calculator</h2>
+      <div class="card">
+        <div class="card-title">Preferment</div>
+        <div class="fields">
+          <label>Type
+            <select id="pf_type">
+              <option value="poolish">Poolish</option>
+              <option value="biga">Biga</option>
+              <option value="levain">Liquid Levain</option>
+            </select>
+          </label>
+          <label>% of Recipe Flour <input id="pf_pct" type="number" step="5" min="10" max="100" value="30"></label>
+          <label>Preferment Hydration % <input id="pf_hyd" type="number" step="5" min="40" max="150" value="100"></label>
+          <label id="pf_yeast_wrap">Yeast % of pref. flour <input id="pf_yeast" type="number" step="0.05" min="0.05" max="2" value="0.25"></label>
+          <hr class="section-sep">
+          <label class="full">Total Recipe Flour (g) <input id="pf_flour" type="number" step="50" min="100" value="500"></label>
+        </div>
+      </div>
+      <div class="result">
+        <div class="result-label">Preferment Breakdown</div>
+        <div id="pf_out"></div>
       </div>
     </section>
 
@@ -413,66 +327,104 @@
     <section id="scale" class="panel">
       <h2>Recipe Scaling</h2>
       <div class="card">
-        <div class="card-title">Base Recipe</div>
+        <div class="card-title">Recipe (Baker's %)</div>
         <div class="fields">
-          <label>Flour (g)
-            <input id="sc_flour" type="number" step="1" min="1" value="500">
-          </label>
-          <label>Water (g)
-            <input id="sc_water" type="number" step="1" min="1" value="375">
-          </label>
-          <label>Starter / Levain (g)
-            <input id="sc_starter" type="number" step="1" min="0" value="100">
-          </label>
-          <label>Salt (g)
-            <input id="sc_salt" type="number" step="0.1" min="0" value="10">
-          </label>
-          <div class="section-label">Add-ins (optional)</div>
-          <div class="sc-addin">
-            <input id="sc_a1n" type="text" placeholder="Ingredient name">
-            <input id="sc_a1w" type="number" step="1" min="0" value="0">
-            <span class="unit">g</span>
+          <div class="section-label full">Flour Blend (% of recipe flour)</div>
+          <div class="sc-addin full">
+            <select id="sc_f1t" style="flex:1">
+              <option value="bread">White bread</option>
+              <option value="ap">All-purpose</option>
+              <option value="t65">T65</option>
+              <option value="t80">T80</option>
+              <option value="t110">T110</option>
+              <option value="whole">Whole wheat</option>
+              <option value="rye">Rye</option>
+              <option value="spelt">Spelt</option>
+              <option value="einkorn">Einkorn</option>
+            </select>
+            <input id="sc_f1p" type="number" step="1" min="0" max="100" value="100">
+            <span class="unit">%</span>
           </div>
-          <div class="sc-addin">
-            <input id="sc_a2n" type="text" placeholder="Ingredient name">
-            <input id="sc_a2w" type="number" step="1" min="0" value="0">
-            <span class="unit">g</span>
+          <div class="sc-addin full">
+            <select id="sc_f2t" style="flex:1">
+              <option value="">— none —</option>
+              <option value="bread">White bread</option>
+              <option value="ap">All-purpose</option>
+              <option value="t65">T65</option>
+              <option value="t80">T80</option>
+              <option value="t110">T110</option>
+              <option value="whole">Whole wheat</option>
+              <option value="rye">Rye</option>
+              <option value="spelt">Spelt</option>
+              <option value="einkorn">Einkorn</option>
+            </select>
+            <input id="sc_f2p" type="number" step="1" min="0" max="100" value="0">
+            <span class="unit">%</span>
           </div>
-          <div class="sc-addin">
-            <input id="sc_a3n" type="text" placeholder="Ingredient name">
-            <input id="sc_a3w" type="number" step="1" min="0" value="0">
-            <span class="unit">g</span>
+          <div class="sc-addin full">
+            <select id="sc_f3t" style="flex:1">
+              <option value="">— none —</option>
+              <option value="bread">White bread</option>
+              <option value="ap">All-purpose</option>
+              <option value="t65">T65</option>
+              <option value="t80">T80</option>
+              <option value="t110">T110</option>
+              <option value="whole">Whole wheat</option>
+              <option value="rye">Rye</option>
+              <option value="spelt">Spelt</option>
+              <option value="einkorn">Einkorn</option>
+            </select>
+            <input id="sc_f3p" type="number" step="1" min="0" max="100" value="0">
+            <span class="unit">%</span>
+          </div>
+          <label>Hydration % <input id="sc_hyd" type="number" step="0.5" min="50" max="200" value="75"></label>
+          <div id="sc_hyd_hint" class="stat-row full"></div>
+          <label>Salt % <input id="sc_salt_pct" type="number" step="0.1" min="0" max="5" value="2"></label>
+          <label>Starter % <input id="sc_starter_pct" type="number" step="1" min="0" max="50" value="20"></label>
+          <label>Starter Hydration % <input id="sc_starter_hyd" type="number" step="5" min="50" max="200" value="100"></label>
+          <div class="section-label">Add-ins (optional, % of total flour)</div>
+          <div id="sc_addins_container" class="full" style="display:flex;flex-direction:column;gap:8px"></div>
+          <div class="full">
+            <button class="btn-outline" id="sc_add_addin" style="width:100%">+ Add Ingredient</button>
           </div>
         </div>
       </div>
+
       <div class="card">
         <div class="card-title">Scale Target</div>
         <div class="fields">
           <label>Scale By
             <select id="sc_mode">
               <option value="total">Total dough weight</option>
-              <option value="flour">Flour weight</option>
+              <option value="flour">Total flour weight</option>
               <option value="loaves">Number of loaves</option>
-              <option value="factor">Multiplier ×</option>
             </select>
           </label>
           <label id="sc_tgt_label"><span id="sc_tgt_lbl_txt">Total dough (g)</span>
             <input id="sc_tgt" type="number" step="10" min="1" value="1000">
           </label>
-          <label id="sc_loafsize_wrap" class="hidden">Loaf size (g)
-            <input id="sc_loafsize" type="number" step="50" min="100" value="900">
-          </label>
-          <label id="sc_nloaves_wrap" class="hidden">Number of loaves
-            <input id="sc_nloaves" type="number" step="1" min="1" value="2">
-          </label>
-          <label id="sc_factor_wrap" class="hidden">Multiplier
-            <input id="sc_factor" type="number" step="0.1" min="0.1" value="2.0">
-          </label>
+          <label id="sc_loafsize_wrap" class="hidden">Loaf size (g) <input id="sc_loafsize" type="number" step="50" min="100" value="900"></label>
+          <label id="sc_nloaves_wrap" class="hidden">Number of loaves <input id="sc_nloaves" type="number" step="1" min="1" value="2"></label>
         </div>
       </div>
+
+      <div class="card">
+        <div class="card-title">Saved Recipes</div>
+        <div class="recipe-save-row">
+          <input id="sc_recipe_name" type="text" placeholder="Recipe name…" style="text-transform:none;letter-spacing:0;font-size:14px">
+          <button class="btn-accent" id="sc_save_btn">Save</button>
+        </div>
+        <div id="sc_saved_list"></div>
+      </div>
+
       <div class="result">
         <div class="result-label">Scaled Recipe</div>
         <div id="sc_out"></div>
+        <div class="sc-actions">
+          <button class="btn-outline" id="sc_copy_btn">Copy Text</button>
+          <button class="btn-outline" id="sc_share_btn">Share URL</button>
+          <button class="btn-outline" onclick="window.print()">Print</button>
+        </div>
       </div>
     </section>
 
@@ -482,29 +434,17 @@
       <div class="card">
         <div class="card-title">Starter Model</div>
         <div class="fields">
-          <label>k (h)
-            <input id="set_st_k" type="number" step="0.1" min="0.5" max="4" value="1.7">
-          </label>
-          <label>α
-            <input id="set_st_a" type="number" step="0.05" min="0.4" max="1.2" value="0.8">
-          </label>
-          <label>Q10
-            <input id="set_q10" type="number" step="0.05" min="1.5" max="2.5" value="2.0">
-          </label>
-          <label>T<sub>ref</sub> °C
-            <input id="set_st_tref" type="number" step="0.5" min="20" max="30" value="26">
-          </label>
+          <label>k (h) <input id="set_st_k" type="number" step="0.1" min="0.5" max="4" value="1.7"></label>
+          <label>α <input id="set_st_a" type="number" step="0.05" min="0.4" max="1.2" value="0.8"></label>
+          <label>Q10 <input id="set_q10" type="number" step="0.05" min="1.5" max="2.5" value="2.0"></label>
+          <label>T<sub>ref</sub> °C <input id="set_st_tref" type="number" step="0.5" min="20" max="30" value="26"></label>
         </div>
       </div>
       <div class="card">
         <div class="card-title">Bulk Model</div>
         <div class="fields">
-          <label>c (h)
-            <input id="set_b_c" type="number" step="0.1" min="0.5" max="4" value="1.5">
-          </label>
-          <label>β
-            <input id="set_b_b" type="number" step="0.05" min="0.3" max="1.0" value="0.6">
-          </label>
+          <label>c (h) <input id="set_b_c" type="number" step="0.1" min="0.5" max="4" value="1.5"></label>
+          <label>β <input id="set_b_b" type="number" step="0.05" min="0.3" max="1.0" value="0.6"></label>
         </div>
       </div>
       <p class="result-note" style="padding:0 4px">Values persist on this device (localStorage).</p>
@@ -517,30 +457,149 @@
     <span class="footer-text">PWA · Offline ready</span>
   </footer>
 
-  <!-- INLINE JS -->
   <script>
-    const LS = { get(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d}catch{return d}}, set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}} };
-    document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById(btn.dataset.target).classList.add('active');});});restoreValues();wireWater();wireStarter();wireBulk();wireSettings();wireScale();computeWater();computeStarter();computeBulk();computeScale();
-      // PWA registration
-      if('serviceWorker' in navigator){ navigator.serviceWorker.register('./service-worker.js').catch(console.error); }
+    const LS={get(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d}catch{return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}};
+
+    // ── Dynamic add-ins state ────────────────────────────────────────────
+    let scAddins=[{name:'',pct:0},{name:'',pct:0},{name:'',pct:0}];
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      document.querySelectorAll('.tab').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));btn.classList.add('active');document.getElementById(btn.dataset.target).classList.add('active');});});
+      const savedTheme=LS.get('theme','dark');setTheme(savedTheme);
+      document.getElementById('themeToggle').addEventListener('click',()=>{setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');});
+      restoreValues();
+      renderAddins();
+      document.getElementById('sc_add_addin').addEventListener('click',()=>{scAddins.push({name:'',pct:0});renderAddins();computeScale();});
+      wireWater();wireStarter();wireBulk();wirePreferment();wireSettings();wireScale();
+      computeWater();computeStarter();computeBulk();computePreferment();computeScale();
+      renderSavedRecipes();
+      if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js').catch(console.error);}
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').classList.remove('hidden');});
+      document.getElementById('installBtn').addEventListener('click',()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;}});
     });
-    function waterTempC(ddt,room,flour,prefOn,pref,method,customFriction){const frictionMap={hand:1,planetary:9,spiral:11};const friction=method==='custom'?(Number(customFriction)||0):(frictionMap[method]??1);const n=prefOn?4:3;const sum=room+flour+(prefOn?pref:0)+friction;return ddt*n-sum;}
-    function starterPeakHours({seed,flour,water,tempC,flourType,k,alpha,Q10,Tref}){const total=seed+flour+water;const inoc=total>0?seed/total:0.2;const hydration=flour>0?(water/flour)*100:100;const flourFactor=(flourType==='white')?1:0.85;const hydrationFactor=(hydration>=90)?1:(hydration>=70?1.07:1.15);const inocClamped=Math.min(Math.max(inoc,0.01),0.5);const tempFactor=Math.pow(Q10,(Tref-tempC)/10);const hours=k*Math.pow(inocClamped,-alpha)*tempFactor*flourFactor*hydrationFactor;return{hours,inocPct:inocClamped*100,hydrationPct:hydration};}
-    function bulkHours({starterPct,ddtC,flourType,hydrBand,saltPct,c,beta,Q10}){const flourFactor=(flourType==='white')?1:0.9;const hydrationFactor=hydrBand==='stiff'?1.10:(hydrBand==='high'?0.90:1.00);const saltFactor=saltPct>=3?1.10:(saltPct>=2.3?1.05:1.00);const tref=26;const sp=Math.max(starterPct,1);const tempFactor=Math.pow(Q10,(tref-ddtC)/10);return c*Math.pow(sp/100,-beta)*tempFactor*flourFactor*hydrationFactor*saltFactor;}
-    function wireWater(){['w_ddt','w_room','w_flour','w_pref_on','w_pref','w_method','w_custom'].forEach(id=>document.getElementById(id).addEventListener('input',computeWater));document.getElementById('w_method').addEventListener('change',()=>{const show=document.getElementById('w_method').value==='custom';document.getElementById('w_custom_wrap').classList.toggle('hidden',!show);computeWater();});document.getElementById('w_pref_on').addEventListener('change',()=>{const on=document.getElementById('w_pref_on').checked;document.getElementById('w_pref_wrap').classList.toggle('hidden',!on);computeWater();});}
-    function computeWater(){const ddt=num('w_ddt'),room=num('w_room'),flour=num('w_flour');const prefOn=document.getElementById('w_pref_on').checked;const pref=num('w_pref');const method=val('w_method');const custom=num('w_custom');const wt=waterTempC(ddt,room,flour,prefOn,pref,method,custom);document.getElementById('w_out').textContent=`${wt.toFixed(1)} °C`;const note=document.getElementById('w_note');note.textContent='';note.classList.remove('warning');if(wt<0){note.textContent='Very cold water—use ice/chilled water to hit DDT.';note.classList.add('warning');}else if(wt>60){note.textContent='Very warm water—recheck inputs/friction.';note.classList.add('warning');}LS.set('water',{ddt,room,flour,prefOn,pref,method,custom});}
+
+    function setTheme(t){document.documentElement.dataset.theme=t;document.getElementById('themeToggle').textContent=t==='dark'?'☀️':'🌙';LS.set('theme',t);}
+
+    // ── Water ─────────────────────────────────────────────────────────────
+    function waterTempC(ddt,room,flour,prefOn,pref,method,cf){const fm={hand:1,planetary:9,spiral:11};const friction=method==='custom'?(Number(cf)||0):(fm[method]??1);const n=prefOn?4:3;return ddt*n-(room+flour+(prefOn?pref:0)+friction);}
+    function wireWater(){['w_ddt','w_room','w_flour','w_pref_on','w_pref','w_method','w_custom'].forEach(id=>document.getElementById(id).addEventListener('input',computeWater));document.getElementById('w_method').addEventListener('change',()=>{document.getElementById('w_custom_wrap').classList.toggle('hidden',val('w_method')!=='custom');computeWater();});document.getElementById('w_pref_on').addEventListener('change',()=>{document.getElementById('w_pref_wrap').classList.toggle('hidden',!document.getElementById('w_pref_on').checked);computeWater();});}
+    function computeWater(){const ddt=num('w_ddt'),room=num('w_room'),flour=num('w_flour'),prefOn=document.getElementById('w_pref_on').checked,pref=num('w_pref'),method=val('w_method'),custom=num('w_custom');const wt=waterTempC(ddt,room,flour,prefOn,pref,method,custom);document.getElementById('w_out').textContent=`${wt.toFixed(1)} °C`;const note=document.getElementById('w_note');note.textContent='';note.classList.remove('warning');if(wt<0){note.textContent='Very cold water—use ice/chilled water to hit DDT.';note.classList.add('warning');}else if(wt>60){note.textContent='Very warm water—recheck inputs/friction.';note.classList.add('warning');}LS.set('water',{ddt,room,flour,prefOn,pref,method,custom});}
+
+    // ── Starter ───────────────────────────────────────────────────────────
+    function starterPeakHours({seed,flour,water,tempC,flourType,k,alpha,Q10,Tref}){const total=seed+flour+water;const inoc=total>0?seed/total:0.2;const hydration=flour>0?(water/flour)*100:100;const flourFactor=flourType==='white'?1:0.85;const hydFactor=hydration>=90?1:(hydration>=70?1.07:1.15);const inocC=Math.min(Math.max(inoc,0.01),0.5);const tempF=Math.pow(Q10,(Tref-tempC)/10);return{hours:k*Math.pow(inocC,-alpha)*tempF*flourFactor*hydFactor,inocPct:inocC*100,hydrationPct:hydration};}
     function wireStarter(){['s_seed','s_flour','s_water','s_temp','s_flourtype'].forEach(id=>document.getElementById(id).addEventListener('input',computeStarter));}
-    function computeStarter(){const k=num('set_st_k'),alpha=num('set_st_a'),Q10=num('set_q10'),Tref=num('set_st_tref');const seed=num('s_seed'),flour=num('s_flour'),water=num('s_water');const tempC=num('s_temp'),flourTypeSel=val('s_flourtype');const flourType=(flourTypeSel==='white')?'white':'whole';const {hours,inocPct,hydrationPct}=starterPeakHours({seed,flour,water,tempC,flourType,k,alpha,Q10,Tref});document.getElementById('s_out').textContent=`${hours.toFixed(1)} h`;document.getElementById('s_inoc').textContent=inocPct.toFixed(1);document.getElementById('s_hydr').textContent=hydrationPct.toFixed(0);LS.set('starter',{seed,flour,water,tempC,flourType:flourTypeSel});}
+    function computeStarter(){const {hours,inocPct,hydrationPct}=starterPeakHours({seed:num('s_seed'),flour:num('s_flour'),water:num('s_water'),tempC:num('s_temp'),flourType:val('s_flourtype')==='white'?'white':'whole',k:num('set_st_k'),alpha:num('set_st_a'),Q10:num('set_q10'),Tref:num('set_st_tref')});document.getElementById('s_out').textContent=`${hours.toFixed(1)} h`;document.getElementById('s_inoc').textContent=inocPct.toFixed(1);document.getElementById('s_hydr').textContent=hydrationPct.toFixed(0);LS.set('starter',{seed:num('s_seed'),flour:num('s_flour'),water:num('s_water'),tempC:num('s_temp'),flourType:val('s_flourtype')});}
+
+    // ── Bulk ──────────────────────────────────────────────────────────────
+    function bulkHours({starterPct,ddtC,flourType,hydrBand,saltPct,c,beta,Q10}){const ff=flourType==='white'?1:0.9;const hf=hydrBand==='stiff'?1.10:(hydrBand==='high'?0.90:1.00);const sf=saltPct>=3?1.10:(saltPct>=2.3?1.05:1.00);return c*Math.pow(Math.max(starterPct,1)/100,-beta)*Math.pow(Q10,(26-ddtC)/10)*ff*hf*sf;}
     function wireBulk(){['b_sp','b_ddt','b_flourtype','b_hydr_band','b_salt'].forEach(id=>document.getElementById(id).addEventListener('input',computeBulk));}
-    function computeBulk(){const c=num('set_b_c'),beta=num('set_b_b'),Q10=num('set_q10');const starterPct=num('b_sp'),ddtC=num('b_ddt'),flourTypeSel=val('b_flourtype');const hydrBand=val('b_hydr_band'),saltPct=num('b_salt');const flourType=(flourTypeSel==='white')?'white':'whole';const hours=bulkHours({starterPct,ddtC,flourType,hydrBand,saltPct,c,beta,Q10});document.getElementById('b_out').textContent=`${hours.toFixed(1)} h`;LS.set('bulk',{starterPct,ddtC,flourType:flourTypeSel,hydrBand,saltPct});}
-    function wireSettings(){['set_st_k','set_st_a','set_q10','set_st_tref','set_b_c','set_b_b'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{saveSettings();computeStarter();computeBulk();}));}
-    function saveSettings(){const settings={st_k:num('set_st_k'),st_a:num('set_st_a'),q10:num('set_q10'),st_tref:num('set_st_tref'),b_c:num('set_b_c'),b_b:num('set_b_b')};LS.set('settings',settings);}
-    function restoreValues(){const S=LS.get('settings',null);if(S){setVal('set_st_k',S.st_k);setVal('set_st_a',S.st_a);setVal('set_q10',S.q10);setVal('set_st_tref',S.st_tref);setVal('set_b_c',S.b_c);setVal('set_b_b',S.b_b);}const W=LS.get('water',null);if(W){setVal('w_ddt',W.ddt);setVal('w_room',W.room);setVal('w_flour',W.flour);setChecked('w_pref_on',W.prefOn);setVal('w_pref',W.pref);setVal('w_method',W.method);setVal('w_custom',W.custom);document.getElementById('w_pref_wrap').classList.toggle('hidden',!W.prefOn);document.getElementById('w_custom_wrap').classList.toggle('hidden',W.method!=='custom');}const St=LS.get('starter',null);if(St){setVal('s_seed',St.seed);setVal('s_flour',St.flour);setVal('s_water',St.water);setVal('s_temp',St.tempC);setVal('s_flourtype',St.flourType);}const B=LS.get('bulk',null);if(B){setVal('b_sp',B.starterPct);setVal('b_ddt',B.ddtC);setVal('b_flourtype',B.flourType);setVal('b_hydr_band',B.hydrBand);setVal('b_salt',B.saltPct);}const Sc=LS.get('scale',null);if(Sc){setVal('sc_flour',Sc.flour);setVal('sc_water',Sc.water);setVal('sc_starter',Sc.starter);setVal('sc_salt',Sc.salt);setVal('sc_a1w',Sc.a1w);setVal('sc_a2w',Sc.a2w);setVal('sc_a3w',Sc.a3w);setVal('sc_a1n',Sc.a1n||'');setVal('sc_a2n',Sc.a2n||'');setVal('sc_a3n',Sc.a3n||'');setVal('sc_mode',Sc.mode);setVal('sc_tgt',Sc.tgt);setVal('sc_loafsize',Sc.loafsize);setVal('sc_nloaves',Sc.nloaves);setVal('sc_factor',Sc.factor);updateScaleMode();}}
-    function wireScale(){['sc_flour','sc_water','sc_starter','sc_salt','sc_a1w','sc_a2w','sc_a3w','sc_tgt','sc_loafsize','sc_nloaves','sc_factor'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));['sc_a1n','sc_a2n','sc_a3n'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));document.getElementById('sc_mode').addEventListener('change',()=>{updateScaleMode();computeScale();});}
-    function updateScaleMode(){const mode=val('sc_mode');document.getElementById('sc_tgt_label').classList.toggle('hidden',mode==='loaves'||mode==='factor');document.getElementById('sc_loafsize_wrap').classList.toggle('hidden',mode!=='loaves');document.getElementById('sc_nloaves_wrap').classList.toggle('hidden',mode!=='loaves');document.getElementById('sc_factor_wrap').classList.toggle('hidden',mode!=='factor');document.getElementById('sc_tgt_lbl_txt').textContent=mode==='flour'?'Flour weight (g)':'Total dough (g)';}
+    function computeBulk(){const hours=bulkHours({starterPct:num('b_sp'),ddtC:num('b_ddt'),flourType:val('b_flourtype')==='white'?'white':'whole',hydrBand:val('b_hydr_band'),saltPct:num('b_salt'),c:num('set_b_c'),beta:num('set_b_b'),Q10:num('set_q10')});document.getElementById('b_out').textContent=`${hours.toFixed(1)} h`;document.getElementById('b_schedule').innerHTML=buildSFSchedule(hours);LS.set('bulk',{starterPct:num('b_sp'),ddtC:num('b_ddt'),flourType:val('b_flourtype'),hydrBand:val('b_hydr_band'),saltPct:num('b_salt')});}
+    function buildSFSchedule(totalHours){const sfWindow=Math.min(totalHours*0.5,2);const interval=sfWindow/4;let h='<div class="sf-schedule"><div class="sf-title">Suggested Stretch & Fold Schedule</div>';h+=`<div class="sf-row"><em>0:00</em><span>Bulk begins</span></div>`;for(let i=1;i<=4;i++){h+=`<div class="sf-row"><em>${fmtTime(i*interval)}</em><span>Fold #${i}</span></div>`;}h+=`<div class="sf-row"><em>${fmtTime(totalHours)}</em><span>Shape & refrigerate</span></div>`;return h+'</div>';}
+    function fmtTime(h){const hrs=Math.floor(h);const mins=Math.round((h-hrs)*60);if(hrs===0)return`${mins}min`;if(mins===0)return`${hrs}h`;return`${hrs}h ${mins}min`;}
+
+    // ── Preferment ────────────────────────────────────────────────────────
+    const PF_PRESETS={poolish:{hyd:100,yeast:0.25,desc:'Equal parts flour and water. Ferment 1–3h at room temp or overnight in the fridge.'},biga:{hyd:45,yeast:0.5,desc:'Stiff preferment. Ferment 12–18h at room temp or up to 48h in the fridge.'},levain:{hyd:100,yeast:null,desc:'Sourdough levain. Build and use at peak activity.'}};
+    function wirePreferment(){['pf_pct','pf_hyd','pf_yeast','pf_flour'].forEach(id=>document.getElementById(id).addEventListener('input',computePreferment));document.getElementById('pf_type').addEventListener('change',()=>{const p=PF_PRESETS[val('pf_type')]||{};if(p.hyd!=null)setVal('pf_hyd',p.hyd);if(p.yeast!=null)setVal('pf_yeast',p.yeast);document.getElementById('pf_yeast_wrap').classList.toggle('hidden',val('pf_type')==='levain');computePreferment();});}
+    function computePreferment(){const type=val('pf_type'),pfPct=num('pf_pct')/100,pfHyd=num('pf_hyd')/100,totalFlour=num('pf_flour');const pfFlour=totalFlour*pfPct,pfWater=pfFlour*pfHyd,pfYeast=type!=='levain'?pfFlour*num('pf_yeast')/100:0,pfTotal=pfFlour+pfWater+pfYeast,mainFlour=totalFlour-pfFlour;const preset=PF_PRESETS[type]||{};let html=`<div style="margin-top:8px"><div style="font-size:12px;color:var(--text-2);margin-bottom:14px;font-style:italic">${preset.desc||''}</div>`;html+=`<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Amount</th></tr></thead><tbody>`;html+=`<tr><td colspan="2" style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:10px 6px 4px">Preferment</td></tr>`;html+=`<tr><td>Flour</td><td class="sc-val">${scFmt(pfFlour)} g</td></tr>`;html+=`<tr><td>Water</td><td class="sc-val">${scFmt(pfWater)} g</td></tr>`;if(type!=='levain')html+=`<tr><td>Yeast (instant)</td><td class="sc-val">${pfYeast.toFixed(1)} g</td></tr>`;html+=`<tr class="sc-total"><td>Total</td><td class="sc-val">${scFmt(pfTotal)} g</td></tr>`;html+=`<tr><td colspan="2" style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:18px 6px 4px">Main Dough</td></tr>`;html+=`<tr><td>Remaining flour</td><td class="sc-val">${scFmt(mainFlour)} g</td></tr>`;html+=`<tr><td style="color:var(--muted);font-size:12px" colspan="2">+ All the preferment above + water & salt</td></tr>`;html+=`</tbody></table><div class="sc-hydration">Preferment: <em>${num('pf_pct')}%</em> of flour at <em>${num('pf_hyd')}%</em> hydration</div></div>`;document.getElementById('pf_out').innerHTML=html;LS.set('preferment',{type,pfPct:num('pf_pct'),pfHyd:num('pf_hyd'),yeast:num('pf_yeast'),flour:num('pf_flour')});}
+
+    // ── Settings ──────────────────────────────────────────────────────────
+    function wireSettings(){['set_st_k','set_st_a','set_q10','set_st_tref','set_b_c','set_b_b'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{LS.set('settings',{st_k:num('set_st_k'),st_a:num('set_st_a'),q10:num('set_q10'),st_tref:num('set_st_tref'),b_c:num('set_b_c'),b_b:num('set_b_b')});computeStarter();computeBulk();}));}
+
+    // ── Scale ─────────────────────────────────────────────────────────────
+    const FLOUR_HYD={bread:[65,80],ap:[60,72],t65:[68,78],t80:[72,82],t110:[75,88],whole:[72,85],rye:[80,100],spelt:[65,75],einkorn:[55,65]};
+    const FLOUR_NAMES={bread:'White bread',ap:'All-purpose',t65:'T65',t80:'T80',t110:'T110',whole:'Whole wheat',rye:'Rye',spelt:'Spelt',einkorn:'Einkorn'};
+    let _lastScale=null;
+
+    function renderAddins(){const c=document.getElementById('sc_addins_container');if(!c)return;c.innerHTML='';scAddins.forEach((a,i)=>{const d=document.createElement('div');d.className='sc-addin';d.innerHTML=`<input type="text" placeholder="Ingredient name" value="${esc(a.name)}" style="flex:1;text-transform:none;letter-spacing:0"><input type="number" step="0.5" min="0" value="${a.pct||0}" style="width:88px;flex:0 0 auto"><span class="unit">%</span><button class="btn-danger" title="Remove">✕</button>`;d.querySelector('input[type="text"]').addEventListener('input',e=>{scAddins[i].name=e.target.value;computeScale();});d.querySelector('input[type="number"]').addEventListener('input',e=>{scAddins[i].pct=Number(e.target.value);computeScale();});d.querySelector('.btn-danger').addEventListener('click',()=>{scAddins.splice(i,1);if(scAddins.length===0)scAddins.push({name:'',pct:0});renderAddins();computeScale();});c.appendChild(d);});}
+    function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
+
+    function wireScale(){['sc_hyd','sc_salt_pct','sc_starter_pct','sc_starter_hyd','sc_f1p','sc_f2p','sc_f3p','sc_tgt','sc_loafsize','sc_nloaves'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));['sc_mode','sc_f1t','sc_f2t','sc_f3t'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(id==='sc_mode')updateScaleMode();computeScale();}));document.getElementById('sc_save_btn').addEventListener('click',saveRecipe);document.getElementById('sc_copy_btn').addEventListener('click',copyRecipeText);document.getElementById('sc_share_btn').addEventListener('click',shareRecipe);}
+    function updateScaleMode(){const m=val('sc_mode');document.getElementById('sc_tgt_label').classList.toggle('hidden',m==='loaves');document.getElementById('sc_loafsize_wrap').classList.toggle('hidden',m!=='loaves');document.getElementById('sc_nloaves_wrap').classList.toggle('hidden',m!=='loaves');document.getElementById('sc_tgt_lbl_txt').textContent=m==='flour'?'Total flour (g)':'Total dough (g)';}
     function scFmt(n){return n<10?n.toFixed(1):String(Math.round(n));}
-    function computeScale(){const flour=num('sc_flour'),water=num('sc_water'),starter=num('sc_starter'),salt=num('sc_salt');const a1w=num('sc_a1w'),a2w=num('sc_a2w'),a3w=num('sc_a3w');const mode=val('sc_mode');const baseTotal=flour+water+starter+salt+a1w+a2w+a3w;let scale=1;if(mode==='total'){scale=num('sc_tgt')/Math.max(baseTotal,0.01);}else if(mode==='flour'){scale=num('sc_tgt')/Math.max(flour,0.01);}else if(mode==='loaves'){scale=(num('sc_nloaves')*num('sc_loafsize'))/Math.max(baseTotal,0.01);}else{scale=num('sc_factor');}const pct=v=>flour>0?`${(v/flour*100).toFixed(0)}%`:'—';const addins=[[val('sc_a1n')||'Add-in 1',a1w],[val('sc_a2n')||'Add-in 2',a2w],[val('sc_a3n')||'Add-in 3',a3w]].filter(([,w])=>w>0);const rows=[['Flour',flour],['Water',water],['Starter',starter],['Salt',salt],...addins];let html='<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Baker\'s %</th><th style="text-align:right">Scaled</th></tr></thead><tbody>';rows.forEach(([name,base])=>{html+=`<tr><td>${name}</td><td class="sc-pct">${pct(base)}</td><td class="sc-val">${scFmt(base*scale)} g</td></tr>`;});html+=`<tr class="sc-total"><td>Total</td><td class="sc-pct"></td><td class="sc-val">${scFmt(baseTotal*scale)} g</td></tr>`;html+='</tbody></table>';document.getElementById('sc_out').innerHTML=html;LS.set('scale',{flour,water,starter,salt,a1w,a2w,a3w,a1n:val('sc_a1n'),a2n:val('sc_a2n'),a3n:val('sc_a3n'),mode,tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves'),factor:num('sc_factor')});}
-    function num(id){return Number(document.getElementById(id).value);} function val(id){return document.getElementById(id).value;} function setVal(id,v){document.getElementById(id).value=v;} function setChecked(id,v){document.getElementById(id).checked=!!v;}
+
+    function computeScale(){
+      const flourBlend=[[val('sc_f1t'),num('sc_f1p')],[val('sc_f2t'),num('sc_f2p')],[val('sc_f3t'),num('sc_f3p')]].filter(([t,p])=>t&&p>0);
+      const totalFP=flourBlend.reduce((s,[,p])=>s+p,0)||1;
+      let wMin=0,wMax=0;
+      flourBlend.forEach(([t,p])=>{const [mn,mx]=FLOUR_HYD[t]||[60,80];wMin+=mn*p/totalFP;wMax+=mx*p/totalFP;});
+      const hMin=Math.round(wMin||60),hMax=Math.round(wMax||80),hydInput=num('sc_hyd');
+      const hintEl=document.getElementById('sc_hyd_hint');
+      if(hydInput<hMin)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--danger)">↓ below range</span>`;
+      else if(hydInput>hMax)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--danger)">↑ above range</span>`;
+      else hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--accent)">✓</span>`;
+
+      const hydPct=num('sc_hyd'),starterPct=num('sc_starter_pct'),starterHyd=Math.max(num('sc_starter_hyd'),1),saltPct=num('sc_salt_pct'),mode=val('sc_mode');
+      const fHyd=starterHyd/100;
+      const flourRatio=1-starterPct/100/(1+fHyd);
+      const recipeWaterRatio=hydPct/100-starterPct/100*fHyd/(1+fHyd);
+      const addinSum=scAddins.reduce((s,a)=>s+(a.pct||0),0)/100;
+      const totalRatio=1+hydPct/100+saltPct/100+addinSum;
+      let T=500;
+      if(mode==='total')T=num('sc_tgt')/Math.max(totalRatio,0.001);
+      else if(mode==='flour')T=num('sc_tgt');
+      else if(mode==='loaves')T=(num('sc_nloaves')*num('sc_loafsize'))/Math.max(totalRatio,0.001);
+
+      const warn=recipeWaterRatio<0;
+      const activeAddins=scAddins.filter(a=>a.pct>0);
+      const flourRows=flourBlend.length>0?flourBlend.map(([t,p])=>{const norm=p/totalFP;return[FLOUR_NAMES[t]||t,norm*flourRatio*100,norm*flourRatio*T];}):[[`Flour`,flourRatio*100,flourRatio*T]];
+      const rows=[...flourRows,['Water',recipeWaterRatio*100,recipeWaterRatio*T],['Starter',starterPct,starterPct/100*T],['Salt',saltPct,saltPct/100*T],...activeAddins.map(a=>[a.name||'Add-in',a.pct,a.pct/100*T])];
+      const totalDough=totalRatio*T;
+
+      let html='<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Baker\'s %</th><th style="text-align:right">Weight</th></tr></thead><tbody>';
+      rows.forEach(([name,pct,grams])=>{html+=`<tr><td>${name}</td><td class="sc-pct">${pct.toFixed(1)}%</td><td class="sc-val${warn&&name==='Water'?' warning':''}">${scFmt(grams)} g</td></tr>`;});
+      html+=`<tr class="sc-total"><td>Total</td><td class="sc-pct"></td><td class="sc-val">${scFmt(totalDough)} g</td></tr>`;
+      html+='</tbody></table>';
+      html+=`<div class="sc-hydration">Total flour: <em>${scFmt(T)} g</em> &nbsp;·&nbsp; Hydration: <em>${hydPct}%</em></div>`;
+      if(warn)html+=`<div class="sc-hydration" style="color:var(--danger)">⚠ Starter hydration exceeds target — increase hydration or reduce starter %.</div>`;
+      document.getElementById('sc_out').innerHTML=html;
+
+      _lastScale={flourBlend,hydPct,starterPct,starterHyd,saltPct,T,totalDough,rows};
+      LS.set('scale',{hyd:hydPct,f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),starterPct,starterHyd,saltPct,addins:scAddins,mode,tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves')});
+    }
+
+    // ── Copy / Share ──────────────────────────────────────────────────────
+    function copyRecipeText(){if(!_lastScale)return;const r=_lastScale;const blendStr=r.flourBlend.length>0?r.flourBlend.map(([t,p])=>`${FLOUR_NAMES[t]} ${p}%`).join(' + '):'Flour';let text=`RECIPE (Baker's %)\n${'─'.repeat(28)}\n`;text+=`Flour blend: ${blendStr}\nHydration: ${r.hydPct}%\nSalt: ${r.saltPct}%\nStarter: ${r.starterPct}% @ ${r.starterHyd}% hydration\n\nScaled to ${scFmt(r.totalDough)}g total dough (flour: ${scFmt(r.T)}g)\n${'─'.repeat(28)}\n`;r.rows.forEach(([name,pct,grams])=>{text+=`${name.padEnd(14)} ${scFmt(grams).padStart(6)}g  (${pct.toFixed(1)}%)\n`;});text+=`${'Total'.padEnd(14)} ${scFmt(r.totalDough).padStart(6)}g\n`;navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById('sc_copy_btn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy Text',2000);}).catch(()=>alert('Copy failed.'));}
+
+    function shareRecipe(){const d={hyd:num('sc_hyd'),f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),sp:num('sc_starter_pct'),sh:num('sc_starter_hyd'),salt:num('sc_salt_pct'),mode:val('sc_mode'),tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves'),addins:scAddins.filter(a=>a.pct>0)};const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(d))));const url=`${location.origin}${location.pathname}#r=${encoded}`;if(navigator.share){navigator.share({title:'Baker Calc Recipe',url}).catch(()=>copyToClip(url,'sc_share_btn','URL Copied!','Share URL'));}else{copyToClip(url,'sc_share_btn','URL Copied!','Share URL');}}
+    function copyToClip(text,btnId,ok,reset){navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById(btnId);b.textContent=ok;setTimeout(()=>b.textContent=reset,2500);}).catch(()=>alert(text));}
+
+    // ── Saved Recipes ─────────────────────────────────────────────────────
+    function saveRecipe(){const name=document.getElementById('sc_recipe_name').value.trim();if(!name){document.getElementById('sc_recipe_name').focus();return;}const recipe={name,data:{hyd:num('sc_hyd'),f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),starterPct:num('sc_starter_pct'),starterHyd:num('sc_starter_hyd'),saltPct:num('sc_salt_pct'),addins:[...scAddins],mode:val('sc_mode'),tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves')}};const recipes=LS.get('recipes',[]);const idx=recipes.findIndex(r=>r.name===name);if(idx>=0)recipes[idx]=recipe;else recipes.push(recipe);LS.set('recipes',recipes);document.getElementById('sc_recipe_name').value='';renderSavedRecipes();}
+    function loadRecipe(name){const r=LS.get('recipes',[]).find(r=>r.name===name);if(!r)return;applyScaleData(r.data);renderAddins();updateScaleMode();computeScale();}
+    function deleteRecipe(name){LS.set('recipes',LS.get('recipes',[]).filter(r=>r.name!==name));renderSavedRecipes();}
+    function renderSavedRecipes(){const recipes=LS.get('recipes',[]);const el=document.getElementById('sc_saved_list');if(!el)return;if(recipes.length===0){el.innerHTML='<div class="no-recipes">No saved recipes yet.</div>';return;}el.innerHTML=recipes.map(r=>`<div class="saved-recipe-item"><span class="saved-recipe-name">${esc(r.name)}</span><button class="btn-outline" onclick="loadRecipe(${JSON.stringify(r.name)})">Load</button><button class="btn-danger" onclick="deleteRecipe(${JSON.stringify(r.name)})">✕</button></div>`).join('');}
+
+    // ── Restore values ────────────────────────────────────────────────────
+    function restoreValues(){
+      // Shared recipe in URL
+      if(location.hash.startsWith('#r=')){try{const d=JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))));applyScaleData(d);history.replaceState(null,'',location.pathname);document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelector('[data-target="scale"]').classList.add('active');document.getElementById('scale').classList.add('active');}catch(e){console.warn('Bad share URL',e);}return;}
+      const S=LS.get('settings',null);if(S){setVal('set_st_k',S.st_k);setVal('set_st_a',S.st_a);setVal('set_q10',S.q10);setVal('set_st_tref',S.st_tref);setVal('set_b_c',S.b_c);setVal('set_b_b',S.b_b);}
+      const W=LS.get('water',null);if(W){setVal('w_ddt',W.ddt);setVal('w_room',W.room);setVal('w_flour',W.flour);setChecked('w_pref_on',W.prefOn);setVal('w_pref',W.pref);setVal('w_method',W.method);setVal('w_custom',W.custom);document.getElementById('w_pref_wrap').classList.toggle('hidden',!W.prefOn);document.getElementById('w_custom_wrap').classList.toggle('hidden',W.method!=='custom');}
+      const St=LS.get('starter',null);if(St){setVal('s_seed',St.seed);setVal('s_flour',St.flour);setVal('s_water',St.water);setVal('s_temp',St.tempC);setVal('s_flourtype',St.flourType);}
+      const B=LS.get('bulk',null);if(B){setVal('b_sp',B.starterPct);setVal('b_ddt',B.ddtC);setVal('b_flourtype',B.flourType);setVal('b_hydr_band',B.hydrBand);setVal('b_salt',B.saltPct);}
+      const Pf=LS.get('preferment',null);if(Pf){setVal('pf_type',Pf.type||'poolish');if(Pf.pfPct!=null)setVal('pf_pct',Pf.pfPct);if(Pf.pfHyd!=null)setVal('pf_hyd',Pf.pfHyd);if(Pf.yeast!=null)setVal('pf_yeast',Pf.yeast);if(Pf.flour!=null)setVal('pf_flour',Pf.flour);document.getElementById('pf_yeast_wrap').classList.toggle('hidden',Pf.type==='levain');}
+      const Sc=LS.get('scale',null);if(Sc)applyScaleData(Sc);
+    }
+
+    function applyScaleData(d){
+      if(d.hyd!=null)setVal('sc_hyd',d.hyd);
+      if(d.f1t)setVal('sc_f1t',d.f1t);if(d.f1p!=null)setVal('sc_f1p',d.f1p);
+      if(d.f2t!=null)setVal('sc_f2t',d.f2t);if(d.f2p!=null)setVal('sc_f2p',d.f2p);
+      if(d.f3t!=null)setVal('sc_f3t',d.f3t);if(d.f3p!=null)setVal('sc_f3p',d.f3p);
+      const sp=d.starterPct??d.sp;const sh=d.starterHyd??d.sh;const salt=d.saltPct??d.salt;
+      if(sp!=null)setVal('sc_starter_pct',sp);if(sh!=null)setVal('sc_starter_hyd',sh);if(salt!=null)setVal('sc_salt_pct',salt);
+      // addins: new format {addins:[]} or old format {a1n,a1p,...}
+      if(d.addins){scAddins=[...d.addins];}
+      else if(d.a1p!=null){scAddins=[{name:d.a1n||'',pct:d.a1p||0},{name:d.a2n||'',pct:d.a2p||0},{name:d.a3n||'',pct:d.a3p||0}];}
+      if(d.mode&&['total','flour','loaves'].includes(d.mode))setVal('sc_mode',d.mode);
+      if(d.tgt!=null)setVal('sc_tgt',d.tgt);if(d.loafsize!=null)setVal('sc_loafsize',d.loafsize);if(d.nloaves!=null)setVal('sc_nloaves',d.nloaves);
+    }
+
+    function num(id){return Number(document.getElementById(id).value);}
+    function val(id){return document.getElementById(id).value;}
+    function setVal(id,v){if(v!=null){const el=document.getElementById(id);if(el)el.value=v;}}
+    function setChecked(id,v){const el=document.getElementById(id);if(el)el.checked=!!v;}
   </script>
 </body>
 </html>
