@@ -151,6 +151,12 @@
     .sf-row:last-child { border-bottom: none; }
     .sf-row em { font-style: normal; color: var(--text); font-weight: 500; }
 
+    /* Settings explanations */
+    .set-intro { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+    .set-intro em { font-style: normal; color: var(--text); }
+    .set-field { display: flex; flex-direction: column; gap: 6px; }
+    .set-hint { font-size: 11px; color: var(--muted); line-height: 1.5; margin: 0; }
+
     /* Footer */
     footer { display: flex; align-items: center; justify-content: space-between; max-width: 620px; margin: 20px auto 0; padding: 14px 20px; border-top: 1px solid var(--border); }
     .footer-text { font-size: 12px; color: var(--muted); }
@@ -416,21 +422,44 @@
       <h2>Model Settings</h2>
       <div class="card">
         <div class="card-title">Starter Model</div>
-        <div class="fields">
-          <label>k (h) <input id="set_st_k" type="number" step="0.1" min="0.5" max="4" value="1.7"></label>
-          <label>α <input id="set_st_a" type="number" step="0.05" min="0.4" max="1.2" value="0.8"></label>
-          <label>Q10 <input id="set_q10" type="number" step="0.05" min="1.5" max="2.5" value="2.0"></label>
-          <label>T<sub>ref</sub> °C <input id="set_st_tref" type="number" step="0.5" min="20" max="30" value="26"></label>
+        <p class="set-intro">The starter model estimates peak rise time using the formula: <em>t = k · inoculation<sup>−α</sup> · Q10<sup>(T<sub>ref</sub>−T)/10</sup></em>. Tune k and α after a few bakes to match your own starter.</p>
+        <div class="fields" style="margin-top:14px">
+          <div class="set-field">
+            <label>k (h) <input id="set_st_k" type="number" step="0.1" min="0.5" max="4" value="1.7"></label>
+            <p class="set-hint">Base rise time at reference conditions. Increase if your starter peaks later than predicted; decrease if it peaks earlier.</p>
+          </div>
+          <div class="set-field">
+            <label>α <input id="set_st_a" type="number" step="0.05" min="0.4" max="1.2" value="0.8"></label>
+            <p class="set-hint">Inoculation sensitivity. Higher = more impact from changing seed ratio. Typical range: 0.6–1.0.</p>
+          </div>
+          <div class="set-field">
+            <label>Q10 <input id="set_q10" type="number" step="0.05" min="1.5" max="2.5" value="2.0"></label>
+            <p class="set-hint">Temperature sensitivity — how much faster fermentation gets per +10 °C. Shared by both models. Typical value: 2.0.</p>
+          </div>
+          <div class="set-field">
+            <label>T<sub>ref</sub> °C <input id="set_st_tref" type="number" step="0.5" min="20" max="30" value="26"></label>
+            <p class="set-hint">Reference temperature at which k was measured. Set to the room temp you normally bake at.</p>
+          </div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">Bulk Model</div>
-        <div class="fields">
-          <label>c (h) <input id="set_b_c" type="number" step="0.1" min="0.5" max="4" value="1.5"></label>
-          <label>β <input id="set_b_b" type="number" step="0.05" min="0.3" max="1.0" value="0.6"></label>
+        <p class="set-intro">Bulk time is estimated as: <em>t = c · (starter%)<sup>−β</sup> · Q10<sup>(26−T)/10</sup></em>. Adjust c and β to match your dough's actual bulk behaviour.</p>
+        <div class="fields" style="margin-top:14px">
+          <div class="set-field">
+            <label>c (h) <input id="set_b_c" type="number" step="0.1" min="0.5" max="4" value="1.5"></label>
+            <p class="set-hint">Base bulk time at 20% starter and 26 °C. Increase if your dough consistently needs more time.</p>
+          </div>
+          <div class="set-field">
+            <label>β <input id="set_b_b" type="number" step="0.05" min="0.3" max="1.0" value="0.6"></label>
+            <p class="set-hint">Starter % sensitivity for bulk. Higher = bigger effect when changing inoculation. Typical range: 0.5–0.8.</p>
+          </div>
         </div>
       </div>
-      <p class="result-note" style="padding:0 4px">Values persist on this device (localStorage).</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px">
+        <p class="result-note">Values persist on this device (localStorage).</p>
+        <button class="btn-outline" id="set_reset_btn" style="font-size:12px;padding:7px 12px">Reset to defaults</button>
+      </div>
     </section>
 
   </main>
@@ -486,7 +515,8 @@
     function computePreferment(){const type=val('pf_type'),pfPct=num('pf_pct')/100,pfHyd=num('pf_hyd')/100,totalFlour=num('pf_flour');const pfFlour=totalFlour*pfPct,pfWater=pfFlour*pfHyd,pfYeast=type!=='levain'?pfFlour*num('pf_yeast')/100:0,pfTotal=pfFlour+pfWater+pfYeast,mainFlour=totalFlour-pfFlour;const preset=PF_PRESETS[type]||{};let html=`<div style="margin-top:8px"><div style="font-size:12px;color:var(--text-2);margin-bottom:14px;font-style:italic">${preset.desc||''}</div>`;html+=`<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Amount</th></tr></thead><tbody>`;html+=`<tr><td colspan="2" style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:10px 6px 4px">Preferment</td></tr>`;html+=`<tr><td>Flour</td><td class="sc-val">${scFmt(pfFlour)} g</td></tr>`;html+=`<tr><td>Water</td><td class="sc-val">${scFmt(pfWater)} g</td></tr>`;if(type!=='levain')html+=`<tr><td>Yeast (instant)</td><td class="sc-val">${pfYeast.toFixed(1)} g</td></tr>`;html+=`<tr class="sc-total"><td>Total</td><td class="sc-val">${scFmt(pfTotal)} g</td></tr>`;html+=`<tr><td colspan="2" style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:18px 6px 4px">Main Dough</td></tr>`;html+=`<tr><td>Remaining flour</td><td class="sc-val">${scFmt(mainFlour)} g</td></tr>`;html+=`<tr><td style="color:var(--muted);font-size:12px" colspan="2">+ All the preferment above + water & salt</td></tr>`;html+=`</tbody></table><div class="sc-hydration">Preferment: <em>${num('pf_pct')}%</em> of flour at <em>${num('pf_hyd')}%</em> hydration</div></div>`;document.getElementById('pf_out').innerHTML=html;LS.set('preferment',{type,pfPct:num('pf_pct'),pfHyd:num('pf_hyd'),yeast:num('pf_yeast'),flour:num('pf_flour')});}
 
     // ── Settings ──────────────────────────────────────────────────────────
-    function wireSettings(){['set_st_k','set_st_a','set_q10','set_st_tref','set_b_c','set_b_b'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{LS.set('settings',{st_k:num('set_st_k'),st_a:num('set_st_a'),q10:num('set_q10'),st_tref:num('set_st_tref'),b_c:num('set_b_c'),b_b:num('set_b_b')});computeStarter();computeBulk();}));}
+    const SETTINGS_DEFAULTS={st_k:1.7,st_a:0.8,q10:2.0,st_tref:26,b_c:1.5,b_b:0.6};
+    function wireSettings(){['set_st_k','set_st_a','set_q10','set_st_tref','set_b_c','set_b_b'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{LS.set('settings',{st_k:num('set_st_k'),st_a:num('set_st_a'),q10:num('set_q10'),st_tref:num('set_st_tref'),b_c:num('set_b_c'),b_b:num('set_b_b')});computeStarter();computeBulk();}));document.getElementById('set_reset_btn').addEventListener('click',()=>{const d=SETTINGS_DEFAULTS;setVal('set_st_k',d.st_k);setVal('set_st_a',d.st_a);setVal('set_q10',d.q10);setVal('set_st_tref',d.st_tref);setVal('set_b_c',d.b_c);setVal('set_b_b',d.b_b);LS.set('settings',d);computeStarter();computeBulk();});}
 
     // ── Scale ─────────────────────────────────────────────────────────────
     const FLOUR_HYD={bread:[65,80],ap:[60,72],t65:[68,78],t80:[72,82],t110:[75,88],whole:[72,85],rye:[80,100],spelt:[65,75],einkorn:[55,65]};
