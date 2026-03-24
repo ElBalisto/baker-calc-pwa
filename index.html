@@ -162,6 +162,14 @@
     .footer-text { font-size: 12px; color: var(--muted); }
     .install { background: var(--accent-2); color: #fff; border: 0; border-radius: 20px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
+    .disp-toggle {
+      padding: 4px 10px; font-size: 11px; font-weight: 600;
+      border: 1px solid var(--border); background: transparent; color: var(--text-2);
+      border-radius: 20px; cursor: pointer; white-space: nowrap;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .disp-toggle.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
     .hidden { display: none !important; }
 
     /* Print */
@@ -189,7 +197,7 @@
     <button class="theme-toggle" id="themeToggle" title="Toggle light/dark">☀️</button>
     <span class="header-emoji">🥖</span>
     <h1>Baker Calc</h1>
-    <p class="sub">Water Temp · Starter Rise · Bulk · Preferment · Recipe Scale</p>
+    <p class="sub">Water Temp · Starter Rise · Bulk · Recipe Scale</p>
   </header>
 
   <div class="tabs-wrap">
@@ -197,7 +205,6 @@
       <button class="tab active" data-target="water">Water Temp</button>
       <button class="tab" data-target="starter">Starter Rise</button>
       <button class="tab" data-target="bulk">Bulk Time</button>
-      <button class="tab" data-target="preferment">Preferment</button>
       <button class="tab" data-target="scale">Scale</button>
       <button class="tab" data-target="settings">Settings</button>
     </nav>
@@ -295,37 +302,17 @@
       </div>
     </section>
 
-    <!-- Preferment Calculator -->
-    <section id="preferment" class="panel">
-      <h2>Preferment Calculator</h2>
-      <div class="card">
-        <div class="card-title">Preferment</div>
-        <div class="fields">
-          <label>Type
-            <select id="pf_type">
-              <option value="poolish">Poolish</option>
-              <option value="biga">Biga</option>
-              <option value="levain">Liquid Levain</option>
-            </select>
-          </label>
-          <label>% of Recipe Flour <input id="pf_pct" type="number" step="5" min="10" max="100" value="30"></label>
-          <label>Preferment Hydration % <input id="pf_hyd" type="number" step="5" min="40" max="150" value="100"></label>
-          <label id="pf_yeast_wrap">Yeast % of pref. flour <input id="pf_yeast" type="number" step="0.05" min="0.05" max="2" value="0.25"></label>
-          <hr class="section-sep">
-          <label class="full">Total Recipe Flour (g) <input id="pf_flour" type="number" step="50" min="100" value="500"></label>
-        </div>
-      </div>
-      <div class="result">
-        <div class="result-label">Preferment Breakdown</div>
-        <div id="pf_out"></div>
-      </div>
-    </section>
-
     <!-- Recipe Scaling -->
     <section id="scale" class="panel">
       <h2>Recipe Scaling</h2>
       <div class="card">
-        <div class="card-title">Recipe (Baker's %)</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div class="card-title" style="margin-bottom:0">Recipe</div>
+          <nav style="display:flex;gap:4px">
+            <button id="sc_disp_pct" class="disp-toggle active">Baker's %</button>
+            <button id="sc_disp_1kg" class="disp-toggle">Per 1 kg</button>
+          </nav>
+        </div>
         <div class="fields">
           <div class="section-label full">Flour Blend (% of recipe flour)</div>
           <div class="sc-addin full">
@@ -375,10 +362,13 @@
             <input id="sc_f3p" type="number" step="1" min="0" max="100" value="0">
             <span class="unit">%</span>
           </div>
-          <label>Hydration % <input id="sc_hyd" type="number" step="0.5" min="50" max="200" value="75"></label>
+          <label id="sc_hyd_wrap">Final Hydration % <input id="sc_hyd" type="number" step="0.5" min="50" max="200" value="75"></label>
+          <label id="sc_water_g_wrap" class="hidden">Water (g) <input id="sc_water_g" type="number" step="5" min="0" value="725"></label>
           <div id="sc_hyd_hint" class="stat-row full"></div>
-          <label>Salt % <input id="sc_salt_pct" type="number" step="0.1" min="0" max="5" value="2"></label>
-          <label>Starter % <input id="sc_starter_pct" type="number" step="1" min="0" max="50" value="20"></label>
+          <label id="sc_salt_pct_wrap">Salt % <input id="sc_salt_pct" type="number" step="0.1" min="0" max="5" value="2"></label>
+          <label id="sc_salt_g_wrap" class="hidden">Salt (g) <input id="sc_salt_g" type="number" step="1" min="0" value="20"></label>
+          <label id="sc_starter_pct_wrap">Starter % <input id="sc_starter_pct" type="number" step="1" min="0" max="50" value="20"></label>
+          <label id="sc_starter_g_wrap" class="hidden">Starter (g) <input id="sc_starter_g" type="number" step="5" min="0" value="200"></label>
           <label>Starter Hydration % <input id="sc_starter_hyd" type="number" step="5" min="50" max="200" value="100"></label>
           <div class="section-label">Add-ins (optional, % of total flour)</div>
           <div id="sc_addins_container" class="full" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -482,8 +472,8 @@
       restoreValues();
       renderAddins();
       document.getElementById('sc_add_addin').addEventListener('click',()=>{scAddins.push({name:'',pct:0});renderAddins();computeScale();});
-      wireWater();wireStarter();wireBulk();wirePreferment();wireSettings();wireScale();
-      computeWater();computeStarter();computeBulk();computePreferment();computeScale();
+      wireWater();wireStarter();wireBulk();wireSettings();wireScale();
+      computeWater();computeStarter();computeBulk();computeScale();
       if('serviceWorker' in navigator){navigator.serviceWorker.register('./service-worker.js').catch(console.error);}
       let deferredPrompt;
       window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('installBtn').classList.remove('hidden');});
@@ -509,11 +499,6 @@
     function buildSFSchedule(totalHours){const sfWindow=Math.min(totalHours*0.5,2);const interval=sfWindow/4;let h='<div class="sf-schedule"><div class="sf-title">Suggested Stretch & Fold Schedule</div>';h+=`<div class="sf-row"><em>0:00</em><span>Bulk begins</span></div>`;for(let i=1;i<=4;i++){h+=`<div class="sf-row"><em>${fmtTime(i*interval)}</em><span>Fold #${i}</span></div>`;}h+=`<div class="sf-row"><em>${fmtTime(totalHours)}</em><span>Shape & refrigerate</span></div>`;return h+'</div>';}
     function fmtTime(h){const hrs=Math.floor(h);const mins=Math.round((h-hrs)*60);if(hrs===0)return`${mins}min`;if(mins===0)return`${hrs}h`;return`${hrs}h ${mins}min`;}
 
-    // ── Preferment ────────────────────────────────────────────────────────
-    const PF_PRESETS={poolish:{hyd:100,yeast:0.25,desc:'Equal parts flour and water. Ferment 1–3h at room temp or overnight in the fridge.'},biga:{hyd:45,yeast:0.5,desc:'Stiff preferment. Ferment 12–18h at room temp or up to 48h in the fridge.'},levain:{hyd:100,yeast:null,desc:'Sourdough levain. Build and use at peak activity.'}};
-    function wirePreferment(){['pf_pct','pf_hyd','pf_yeast','pf_flour'].forEach(id=>document.getElementById(id).addEventListener('input',computePreferment));document.getElementById('pf_type').addEventListener('change',()=>{const p=PF_PRESETS[val('pf_type')]||{};if(p.hyd!=null)setVal('pf_hyd',p.hyd);if(p.yeast!=null)setVal('pf_yeast',p.yeast);document.getElementById('pf_yeast_wrap').classList.toggle('hidden',val('pf_type')==='levain');computePreferment();});}
-    function computePreferment(){const type=val('pf_type'),pfPct=num('pf_pct')/100,pfHyd=num('pf_hyd')/100,totalFlour=num('pf_flour');const pfFlour=totalFlour*pfPct,pfWater=pfFlour*pfHyd,pfYeast=type!=='levain'?pfFlour*num('pf_yeast')/100:0,pfTotal=pfFlour+pfWater+pfYeast,mainFlour=totalFlour-pfFlour;const preset=PF_PRESETS[type]||{};let html=`<div style="margin-top:8px"><div style="font-size:12px;color:var(--text-2);margin-bottom:14px;font-style:italic">${preset.desc||''}</div>`;html+=`<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Amount</th></tr></thead><tbody>`;html+=`<tr><td colspan="2" style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:10px 6px 4px">Preferment</td></tr>`;html+=`<tr><td>Flour</td><td class="sc-val">${scFmt(pfFlour)} g</td></tr>`;html+=`<tr><td>Water</td><td class="sc-val">${scFmt(pfWater)} g</td></tr>`;if(type!=='levain')html+=`<tr><td>Yeast (instant)</td><td class="sc-val">${pfYeast.toFixed(1)} g</td></tr>`;html+=`<tr class="sc-total"><td>Total</td><td class="sc-val">${scFmt(pfTotal)} g</td></tr>`;html+=`<tr><td colspan="2" style="color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:18px 6px 4px">Main Dough</td></tr>`;html+=`<tr><td>Remaining flour</td><td class="sc-val">${scFmt(mainFlour)} g</td></tr>`;html+=`<tr><td style="color:var(--muted);font-size:12px" colspan="2">+ All the preferment above + water & salt</td></tr>`;html+=`</tbody></table><div class="sc-hydration">Preferment: <em>${num('pf_pct')}%</em> of flour at <em>${num('pf_hyd')}%</em> hydration</div></div>`;document.getElementById('pf_out').innerHTML=html;LS.set('preferment',{type,pfPct:num('pf_pct'),pfHyd:num('pf_hyd'),yeast:num('pf_yeast'),flour:num('pf_flour')});}
-
     // ── Settings ──────────────────────────────────────────────────────────
     const SETTINGS_DEFAULTS={st_k:1.7,st_a:0.8,q10:2.0,st_tref:26,b_c:1.5,b_b:0.6};
     function wireSettings(){['set_st_k','set_st_a','set_q10','set_st_tref','set_b_c','set_b_b'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{LS.set('settings',{st_k:num('set_st_k'),st_a:num('set_st_a'),q10:num('set_q10'),st_tref:num('set_st_tref'),b_c:num('set_b_c'),b_b:num('set_b_b')});computeStarter();computeBulk();}));document.getElementById('set_reset_btn').addEventListener('click',()=>{const d=SETTINGS_DEFAULTS;setVal('set_st_k',d.st_k);setVal('set_st_a',d.st_a);setVal('set_q10',d.q10);setVal('set_st_tref',d.st_tref);setVal('set_b_c',d.b_c);setVal('set_b_b',d.b_b);LS.set('settings',d);computeStarter();computeBulk();});}
@@ -522,11 +507,15 @@
     const FLOUR_HYD={bread:[65,80],ap:[60,72],t65:[68,78],t80:[72,82],t110:[75,88],whole:[72,85],rye:[80,100],spelt:[65,75],einkorn:[55,65]};
     const FLOUR_NAMES={bread:'White bread',ap:'All-purpose',t65:'T65',t80:'T80',t110:'T110',whole:'Whole wheat',rye:'Rye',spelt:'Spelt',einkorn:'Einkorn'};
     let _lastScale=null;
+    let scRecipeMode='pct';
 
     function renderAddins(){const c=document.getElementById('sc_addins_container');if(!c)return;c.innerHTML='';scAddins.forEach((a,i)=>{const d=document.createElement('div');d.className='sc-addin';d.innerHTML=`<input type="text" placeholder="Ingredient name" value="${esc(a.name)}" style="flex:1;text-transform:none;letter-spacing:0"><input type="number" step="0.5" min="0" value="${a.pct||0}" style="width:88px;flex:0 0 auto"><span class="unit">%</span><button class="btn-danger" title="Remove">✕</button>`;d.querySelector('input[type="text"]').addEventListener('input',e=>{scAddins[i].name=e.target.value;computeScale();});d.querySelector('input[type="number"]').addEventListener('input',e=>{scAddins[i].pct=Number(e.target.value);computeScale();});d.querySelector('.btn-danger').addEventListener('click',()=>{scAddins.splice(i,1);if(scAddins.length===0)scAddins.push({name:'',pct:0});renderAddins();computeScale();});c.appendChild(d);});}
     function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');}
 
-    function wireScale(){['sc_hyd','sc_salt_pct','sc_starter_pct','sc_starter_hyd','sc_f1p','sc_f2p','sc_f3p','sc_tgt','sc_loafsize','sc_nloaves'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));['sc_mode','sc_f1t','sc_f2t','sc_f3t'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(id==='sc_mode')updateScaleMode();computeScale();}));document.getElementById('sc_copy_btn').addEventListener('click',copyRecipeText);document.getElementById('sc_share_btn').addEventListener('click',shareRecipe);}
+    function wireScale(){['sc_hyd','sc_water_g','sc_salt_pct','sc_salt_g','sc_starter_pct','sc_starter_g','sc_starter_hyd','sc_f1p','sc_f2p','sc_f3p','sc_tgt','sc_loafsize','sc_nloaves'].forEach(id=>document.getElementById(id).addEventListener('input',computeScale));['sc_mode','sc_f1t','sc_f2t','sc_f3t'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{if(id==='sc_mode')updateScaleMode();computeScale();}));document.getElementById('sc_copy_btn').addEventListener('click',copyRecipeText);document.getElementById('sc_share_btn').addEventListener('click',shareRecipe);document.getElementById('sc_disp_pct').addEventListener('click',()=>switchRecipeMode('pct'));document.getElementById('sc_disp_1kg').addEventListener('click',()=>switchRecipeMode('1kg'));}
+    function updateRecipeModeBtns(){document.getElementById('sc_disp_pct').classList.toggle('active',scRecipeMode==='pct');document.getElementById('sc_disp_1kg').classList.toggle('active',scRecipeMode==='1kg');}
+    function switchRecipeMode(newMode){if(newMode===scRecipeMode)return;const fH=Math.max(num('sc_starter_hyd'),1)/100;if(newMode==='1kg'){const H=num('sc_hyd')/100,s=num('sc_starter_pct')/100,sp=num('sc_salt_pct')/100;const rwRatio=H*(1+s/(1+fH))-s*fH/(1+fH);setVal('sc_water_g',Math.round(rwRatio*1000));setVal('sc_salt_g',Math.round(sp*1000));setVal('sc_starter_g',Math.round(s*1000));}else{const s=num('sc_starter_g')/1000,sp=num('sc_salt_g')/1000,rw=num('sc_water_g')/1000;const H=(rw+s*fH/(1+fH))/(1+s/(1+fH));setVal('sc_hyd',(H*100).toFixed(1));setVal('sc_salt_pct',(sp*100).toFixed(1));setVal('sc_starter_pct',(s*100).toFixed(1));}scRecipeMode=newMode;const is1kg=newMode==='1kg';['sc_hyd_wrap','sc_salt_pct_wrap','sc_starter_pct_wrap'].forEach(id=>document.getElementById(id).classList.toggle('hidden',is1kg));['sc_water_g_wrap','sc_salt_g_wrap','sc_starter_g_wrap'].forEach(id=>document.getElementById(id).classList.toggle('hidden',!is1kg));updateRecipeModeBtns();computeScale();}
+    function getRecipeParams(){const fH=Math.max(num('sc_starter_hyd'),1)/100;if(scRecipeMode==='pct'){return{H:num('sc_hyd')/100,s:num('sc_starter_pct')/100,sp:num('sc_salt_pct')/100,fH};}const s=num('sc_starter_g')/1000,sp=num('sc_salt_g')/1000,rw=num('sc_water_g')/1000;const H=(rw+s*fH/(1+fH))/(1+s/(1+fH));return{H,s,sp,fH};}
     function updateScaleMode(){const m=val('sc_mode');document.getElementById('sc_tgt_label').classList.toggle('hidden',m==='loaves');document.getElementById('sc_loafsize_wrap').classList.toggle('hidden',m!=='loaves');document.getElementById('sc_nloaves_wrap').classList.toggle('hidden',m!=='loaves');document.getElementById('sc_tgt_lbl_txt').textContent=m==='flour'?'Total flour (g)':'Total dough (g)';}
     function scFmt(n){return n<10?n.toFixed(1):String(Math.round(n));}
 
@@ -535,43 +524,73 @@
       const totalFP=flourBlend.reduce((s,[,p])=>s+p,0)||1;
       let wMin=0,wMax=0;
       flourBlend.forEach(([t,p])=>{const [mn,mx]=FLOUR_HYD[t]||[60,80];wMin+=mn*p/totalFP;wMax+=mx*p/totalFP;});
-      const hMin=Math.round(wMin||60),hMax=Math.round(wMax||80),hydInput=num('sc_hyd');
+      const hMin=Math.round(wMin||60),hMax=Math.round(wMax||80);
       const hintEl=document.getElementById('sc_hyd_hint');
-      if(hydInput<hMin)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--danger)">↓ below range</span>`;
-      else if(hydInput>hMax)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--danger)">↑ above range</span>`;
-      else hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--accent)">✓</span>`;
 
-      const hydPct=num('sc_hyd'),starterPct=num('sc_starter_pct'),starterHyd=Math.max(num('sc_starter_hyd'),1),saltPct=num('sc_salt_pct'),mode=val('sc_mode');
-      const fHyd=starterHyd/100;
-      const flourRatio=1-starterPct/100/(1+fHyd);
-      const recipeWaterRatio=hydPct/100-starterPct/100*fHyd/(1+fHyd);
-      const addinSum=scAddins.reduce((s,a)=>s+(a.pct||0),0)/100;
-      const totalRatio=1+hydPct/100+saltPct/100+addinSum;
-      let T=500;
-      if(mode==='total')T=num('sc_tgt')/Math.max(totalRatio,0.001);
-      else if(mode==='flour')T=num('sc_tgt');
-      else if(mode==='loaves')T=(num('sc_nloaves')*num('sc_loafsize'))/Math.max(totalRatio,0.001);
+      const {H,s,sp,fH}=getRecipeParams();
+      const flourFactor=1+s/(1+fH);
 
-      const warn=recipeWaterRatio<0;
+      if(scRecipeMode==='pct'){
+        const hydInput=num('sc_hyd');
+        if(hydInput<hMin)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--danger)">↓ below range</span>`;
+        else if(hydInput>hMax)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--danger)">↑ above range</span>`;
+        else hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${hMin}–${hMax}%</em> <span style="color:var(--accent)">✓</span>`;
+      } else {
+        const rwMin=Math.round((hMin/100*flourFactor-s*fH/(1+fH))*1000);
+        const rwMax=Math.round((hMax/100*flourFactor-s*fH/(1+fH))*1000);
+        const wg=num('sc_water_g');
+        if(wg<rwMin)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${rwMin}–${rwMax} g</em> <span style="color:var(--danger)">↓ below range</span>`;
+        else if(wg>rwMax)hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${rwMin}–${rwMax} g</em> <span style="color:var(--danger)">↑ above range</span>`;
+        else hintEl.innerHTML=`Blend recommendation: <em style="color:var(--accent)">${rwMin}–${rwMax} g</em> <span style="color:var(--accent)">✓</span>`;
+      }
+
+      const A=scAddins.reduce((sum,a)=>sum+(a.pct||0),0)/100;
+      const mode=val('sc_mode');
+      const totalRatioOfM=(1+H)*flourFactor+sp+A;
+
+      let M=500;
+      if(mode==='total')M=num('sc_tgt')/Math.max(totalRatioOfM,0.001);
+      else if(mode==='flour')M=num('sc_tgt')/Math.max(flourFactor,0.001);
+      else if(mode==='loaves')M=(num('sc_nloaves')*num('sc_loafsize'))/Math.max(totalRatioOfM,0.001);
+
+      const totalFlourG=M*flourFactor;
+      const totalWaterG=H*totalFlourG;
+      const starterG=s*M;
+      const starterWaterG=starterG*fH/(1+fH);
+      const recipeWaterG=totalWaterG-starterWaterG;
+      const recipeWaterPct=recipeWaterG/M*100;
+      const saltG=sp*M;
       const activeAddins=scAddins.filter(a=>a.pct>0);
-      const flourRows=flourBlend.length>0?flourBlend.map(([t,p])=>{const norm=p/totalFP;return[FLOUR_NAMES[t]||t,norm*flourRatio*100,norm*flourRatio*T];}):[[`Flour`,flourRatio*100,flourRatio*T]];
-      const rows=[...flourRows,['Water',recipeWaterRatio*100,recipeWaterRatio*T],['Starter',starterPct,starterPct/100*T],['Salt',saltPct,saltPct/100*T],...activeAddins.map(a=>[a.name||'Add-in',a.pct,a.pct/100*T])];
-      const totalDough=totalRatio*T;
+      const addinG=activeAddins.reduce((sum,a)=>sum+a.pct/100*M,0);
+      const totalDoughG=M+recipeWaterG+starterG+saltG+addinG;
 
-      let html='<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Baker\'s %</th><th style="text-align:right">Weight</th></tr></thead><tbody>';
-      rows.forEach(([name,pct,grams])=>{html+=`<tr><td>${name}</td><td class="sc-pct">${pct.toFixed(1)}%</td><td class="sc-val${warn&&name==='Water'?' warning':''}">${scFmt(grams)} g</td></tr>`;});
-      html+=`<tr class="sc-total"><td>Total</td><td class="sc-pct"></td><td class="sc-val">${scFmt(totalDough)} g</td></tr>`;
-      html+='</tbody></table>';
-      html+=`<div class="sc-hydration">Total flour: <em>${scFmt(T)} g</em> &nbsp;·&nbsp; Hydration: <em>${hydPct}%</em></div>`;
+      const warn=recipeWaterG<0;
+      const flourRows=flourBlend.length>0?flourBlend.map(([t,p])=>[FLOUR_NAMES[t]||t,p/totalFP*100,p/totalFP*M]):[['Flour',100,M]];
+      const rows=[...flourRows,['Water',recipeWaterPct,recipeWaterG],['Starter',s*100,starterG],['Salt',sp*100,saltG],...activeAddins.map(a=>[a.name||'Add-in',a.pct,a.pct/100*M])];
+
+      let html;
+      if(scRecipeMode==='1kg'){
+        const k=1000/M;
+        html='<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Per 1 kg</th><th style="text-align:right">Weight</th></tr></thead><tbody>';
+        rows.forEach(([name,,g])=>{html+=`<tr><td>${name}</td><td class="sc-pct">${scFmt(g*k)} g</td><td class="sc-val${warn&&name==='Water'?' warning':''}">${scFmt(g)} g</td></tr>`;});
+        html+=`<tr class="sc-total"><td>Total</td><td class="sc-pct">${scFmt(totalDoughG*k)} g</td><td class="sc-val">${scFmt(totalDoughG)} g</td></tr>`;
+        html+='</tbody></table>';
+      } else {
+        html='<table class="sc-table"><thead><tr><th>Ingredient</th><th style="text-align:right">Baker\'s %</th><th style="text-align:right">Weight</th></tr></thead><tbody>';
+        rows.forEach(([name,pct,g])=>{html+=`<tr><td>${name}</td><td class="sc-pct">${pct.toFixed(1)}%</td><td class="sc-val${warn&&name==='Water'?' warning':''}">${scFmt(g)} g</td></tr>`;});
+        html+=`<tr class="sc-total"><td>Total</td><td class="sc-pct"></td><td class="sc-val">${scFmt(totalDoughG)} g</td></tr>`;
+        html+='</tbody></table>';
+      }
+      html+=`<div class="sc-hydration">Final hydration: <em>${(H*100).toFixed(1)}%</em> &nbsp;·&nbsp; Total flour: <em>${scFmt(totalFlourG)} g</em></div>`;
       if(warn)html+=`<div class="sc-hydration" style="color:var(--danger)">⚠ Starter hydration exceeds target — increase hydration or reduce starter %.</div>`;
       document.getElementById('sc_out').innerHTML=html;
 
-      _lastScale={flourBlend,hydPct,starterPct,starterHyd,saltPct,T,totalDough,rows};
-      LS.set('scale',{hyd:hydPct,f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),starterPct,starterHyd,saltPct,addins:scAddins,mode,tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves')});
+      _lastScale={flourBlend,hydPct:H*100,starterPct:s*100,starterHyd:fH*100,saltPct:sp*100,M,totalFlourG,totalDoughG,rows,recipeMode:scRecipeMode};
+      LS.set('scale',{hyd:num('sc_hyd'),f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),starterPct:num('sc_starter_pct'),starterHyd:num('sc_starter_hyd'),saltPct:num('sc_salt_pct'),addins:scAddins,mode,tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves'),recipeMode:scRecipeMode});
     }
 
     // ── Copy / Share ──────────────────────────────────────────────────────
-    function copyRecipeText(){if(!_lastScale)return;const r=_lastScale;const blendStr=r.flourBlend.length>0?r.flourBlend.map(([t,p])=>`${FLOUR_NAMES[t]} ${p}%`).join(' + '):'Flour';let text=`RECIPE (Baker's %)\n${'─'.repeat(28)}\n`;text+=`Flour blend: ${blendStr}\nHydration: ${r.hydPct}%\nSalt: ${r.saltPct}%\nStarter: ${r.starterPct}% @ ${r.starterHyd}% hydration\n\nScaled to ${scFmt(r.totalDough)}g total dough (flour: ${scFmt(r.T)}g)\n${'─'.repeat(28)}\n`;r.rows.forEach(([name,pct,grams])=>{text+=`${name.padEnd(14)} ${scFmt(grams).padStart(6)}g  (${pct.toFixed(1)}%)\n`;});text+=`${'Total'.padEnd(14)} ${scFmt(r.totalDough).padStart(6)}g\n`;navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById('sc_copy_btn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy Text',2000);}).catch(()=>alert('Copy failed.'));}
+    function copyRecipeText(){if(!_lastScale)return;const r=_lastScale;const blendStr=r.flourBlend.length>0?r.flourBlend.map(([t,p])=>`${FLOUR_NAMES[t]} ${p}%`).join(' + '):'Flour';const k=1000/r.M;let text;if(r.recipeMode==='1kg'){text=`RECIPE (per 1 kg main flour)\n${'─'.repeat(32)}\n`;text+=`Flour blend: ${blendStr}\nFinal hydration: ${r.hydPct.toFixed(1)}%\n\nMain flour: ${scFmt(r.M)}g | Total flour: ${scFmt(r.totalFlourG)}g | Total dough: ${scFmt(r.totalDoughG)}g\n${'─'.repeat(32)}\n`;r.rows.forEach(([name,,grams])=>{text+=`${name.padEnd(14)} ${scFmt(grams*k).padStart(6)}g per 1kg   →  ${scFmt(grams).padStart(6)}g\n`;});}else{text=`RECIPE (Baker's % of main flour)\n${'─'.repeat(32)}\n`;text+=`Flour blend: ${blendStr}\nFinal hydration: ${r.hydPct.toFixed(1)}%\nSalt: ${r.saltPct.toFixed(1)}%\nStarter: ${r.starterPct.toFixed(1)}% @ ${r.starterHyd.toFixed(0)}% hydration\n\nMain flour: ${scFmt(r.M)}g | Total flour: ${scFmt(r.totalFlourG)}g | Total dough: ${scFmt(r.totalDoughG)}g\n${'─'.repeat(32)}\n`;r.rows.forEach(([name,pct,grams])=>{text+=`${name.padEnd(14)} ${scFmt(grams).padStart(6)}g  (${pct.toFixed(1)}%)\n`;});}text+=`${'Total'.padEnd(14)} ${scFmt(r.totalDoughG).padStart(6)}g\n`;navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById('sc_copy_btn');b.textContent='Copied!';setTimeout(()=>b.textContent='Copy Text',2000);}).catch(()=>alert('Copy failed.'));}
 
     function shareRecipe(){const d={hyd:num('sc_hyd'),f1t:val('sc_f1t'),f1p:num('sc_f1p'),f2t:val('sc_f2t'),f2p:num('sc_f2p'),f3t:val('sc_f3t'),f3p:num('sc_f3p'),sp:num('sc_starter_pct'),sh:num('sc_starter_hyd'),salt:num('sc_salt_pct'),mode:val('sc_mode'),tgt:num('sc_tgt'),loafsize:num('sc_loafsize'),nloaves:num('sc_nloaves'),addins:scAddins.filter(a=>a.pct>0)};const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(d))));const url=`${location.origin}${location.pathname}#r=${encoded}`;if(navigator.share){navigator.share({title:'Baker Calc Recipe',url}).catch(()=>copyToClip(url,'sc_share_btn','URL Copied!','Share URL'));}else{copyToClip(url,'sc_share_btn','URL Copied!','Share URL');}}
     function copyToClip(text,btnId,ok,reset){navigator.clipboard.writeText(text).then(()=>{const b=document.getElementById(btnId);b.textContent=ok;setTimeout(()=>b.textContent=reset,2500);}).catch(()=>alert(text));}
@@ -584,7 +603,6 @@
       const W=LS.get('water',null);if(W){setVal('w_ddt',W.ddt);setVal('w_room',W.room);setVal('w_flour',W.flour);setChecked('w_pref_on',W.prefOn);setVal('w_pref',W.pref);setVal('w_method',W.method);setVal('w_custom',W.custom);document.getElementById('w_pref_wrap').classList.toggle('hidden',!W.prefOn);document.getElementById('w_custom_wrap').classList.toggle('hidden',W.method!=='custom');}
       const St=LS.get('starter',null);if(St){setVal('s_seed',St.seed);setVal('s_flour',St.flour);setVal('s_water',St.water);setVal('s_temp',St.tempC);setVal('s_flourtype',St.flourType);}
       const B=LS.get('bulk',null);if(B){setVal('b_sp',B.starterPct);setVal('b_ddt',B.ddtC);setVal('b_flourtype',B.flourType);setVal('b_hydr_band',B.hydrBand);setVal('b_salt',B.saltPct);}
-      const Pf=LS.get('preferment',null);if(Pf){setVal('pf_type',Pf.type||'poolish');if(Pf.pfPct!=null)setVal('pf_pct',Pf.pfPct);if(Pf.pfHyd!=null)setVal('pf_hyd',Pf.pfHyd);if(Pf.yeast!=null)setVal('pf_yeast',Pf.yeast);if(Pf.flour!=null)setVal('pf_flour',Pf.flour);document.getElementById('pf_yeast_wrap').classList.toggle('hidden',Pf.type==='levain');}
       const Sc=LS.get('scale',null);if(Sc)applyScaleData(Sc);
     }
 
@@ -600,6 +618,7 @@
       else if(d.a1p!=null){scAddins=[{name:d.a1n||'',pct:d.a1p||0},{name:d.a2n||'',pct:d.a2p||0},{name:d.a3n||'',pct:d.a3p||0}];}
       if(d.mode&&['total','flour','loaves'].includes(d.mode))setVal('sc_mode',d.mode);
       if(d.tgt!=null)setVal('sc_tgt',d.tgt);if(d.loafsize!=null)setVal('sc_loafsize',d.loafsize);if(d.nloaves!=null)setVal('sc_nloaves',d.nloaves);
+      if(d.recipeMode==='1kg')switchRecipeMode('1kg');
     }
 
     function num(id){return Number(document.getElementById(id).value);}
